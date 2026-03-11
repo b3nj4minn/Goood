@@ -1,0 +1,22 @@
+{
+  "name": "Goood",
+  "short_name": "Goood",
+  "description": "Construye hábitos. Mantén tu racha.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F2F2F7",
+  "theme_color": "#F2F2F7",
+  "icons": [
+    {
+      "src": "/GOOOD_LOGO.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/GOOOD_LOGO.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}

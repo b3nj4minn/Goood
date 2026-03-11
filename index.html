@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+
+    <!-- Aquí está vinculado tu nuevo logo para el navegador -->
+    <link rel="icon" type="image/svg+xml" href="/GOOOD_LOGO.svg" />
+
+    <!-- ENLACE AL MANIFEST PARA INSTALAR LA APP (PWA) -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <!-- Etiquetas específicas para iPhone/iOS (Pantalla de inicio) -->
+    <link rel="apple-touch-icon" href="/logo-apple.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Goood" />
+
+    <!-- Viewport ajustado para evitar zoom y dar sensación de App Nativa -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+
+    <!-- Aquí está el nuevo nombre de tu app -->
+    <title>Goood</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
