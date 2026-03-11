@@ -112,8 +112,8 @@ const HABIT_COLORS = [
 
 const ICON_CATEGORIES = {
   "Productividad": { Target, Zap, Briefcase, CalendarClock, ListTodo, Focus, CheckSquare, ClipboardList, Clock, BarChart, TrendingUpIcon, Flag, Lightbulb, Puzzle, Rocket, PlayCircle },
-  "Salud & Fitness": { Dumbbell, Heart, Droplet, Apple, FlameIcon, Bike, Thermometer, Carrot, Bone, Pill, HeartPulse, Timer, Footprints, Salad, Medal },
-  "Estudio & Trabajo": { Book, GraduationCap, Laptop, Code, PenTool, Calculator, BookOpen, Library, Microscope, Monitor, FileText, PencilRuler, Highlighter, FolderIcon, Archive, Paperclip },
+  "Salud & Fitness": { Dumbbell, Heart, Droplet, Apple, Activity, FlameIcon, Bike, Thermometer, Carrot, Bone, Pill, HeartPulse, Timer, Footprints, Salad, Medal },
+  "Estudio & Trabajo": { Book, GraduationCap, Laptop, Code, PenTool, Calculator, BookOpen, Library, Microscope, Monitor, FileText, PencilRuler, Highlighter, Folder: FolderIcon, Archive, Paperclip },
   "Hogar & Vida": { Building, Car, ShoppingCart, Utensils, BedDouble, Wrench, Home, Hammer, Scissors, Key, Bath, Armchair, Refrigerator, Lock, Package, Brush },
   "Bienestar": { Smile, Moon, Sun, Coffee, Leaf, Music, CloudIcon, Wind, Sunrise, Sunset, Rainbow, Umbrella, Headphones, Flower2, HeartHandshake, Palmtree },
   "Ocio": { Gamepad, Tv, Camera, Plane, Globe, Ticket, Clapperboard, Film, Popcorn, ImageIcon, Map, MapPin, Compass, Tent, PartyPopper }
@@ -230,9 +230,11 @@ const CategoryCard = ({ group, habitStreaks, isPendingMode, isEditing, onToggle,
   const progress = total === 0 ? 0 : Math.round((completed / total) * 100);
   const isAllDone = total > 0 && completed === total;
 
+  // Si estamos editando, forzamos a que esté expandido
   const expanded = isExpanded || isEditing;
   const IconComponent = group.icon ? (ICON_MAP[group.icon] || Folder) : Folder;
 
+  // Ordenamos las sub-metas para que las completadas bajen solas
   const sortedHabits = [...group.habits].sort((a,b) => {
       if (a.completed !== b.completed) return a.completed ? 1 : -1;
       return a.order - b.order;
@@ -240,6 +242,8 @@ const CategoryCard = ({ group, habitStreaks, isPendingMode, isEditing, onToggle,
 
   return (
     <div className={`bg-white rounded-[24px] shadow-sm border transition-all duration-400 ease-out overflow-hidden ${isAllDone && !isEditing ? 'border-[#34C759]/30 bg-[#34C759]/5' : 'border-black/[0.04]'}`}>
+      
+      {/* Cabecera / Tarjeta Principal */}
       <div onClick={() => setIsExpanded(!expanded)} className="p-4 cursor-pointer hover:bg-gray-50/50 transition-colors relative z-10">
         <div className="flex justify-between items-center mb-3">
           <div className="flex items-center gap-3">
@@ -252,10 +256,10 @@ const CategoryCard = ({ group, habitStreaks, isPendingMode, isEditing, onToggle,
                )}
             </div>
             <div>
-               <h3 className={`font-extrabold text-[15px] tracking-tight uppercase transition-colors duration-300 ${isAllDone && !isEditing ? 'text-[#34C759]' : 'text-gray-900'}`}>
+               <h3 className={`font-extrabold text-[15px] md:text-[16px] tracking-tight uppercase transition-colors duration-300 ${isAllDone && !isEditing ? 'text-[#34C759]' : 'text-gray-900'}`}>
                  {group.name}
                </h3>
-               <p className="text-[11px] font-medium text-gray-400 mt-0.5">
+               <p className="text-[12px] font-medium text-gray-400 mt-0.5">
                  {total > 0 ? `${completed} de ${total} completadas` : 'Categoría vacía'}
                </p>
             </div>
@@ -276,42 +280,57 @@ const CategoryCard = ({ group, habitStreaks, isPendingMode, isEditing, onToggle,
              {isEditing && !isPendingMode && (
                 <>
                   <button
-                     onClick={(e) => { e.stopPropagation(); onTogglePin(group.name); }}
+                     onClick={(e) => {
+                        e.stopPropagation();
+                        onTogglePin(group.name);
+                     }}
                      className={`w-7 h-7 flex items-center justify-center rounded-full hover:scale-105 active:scale-95 transition-all ${isPinned ? 'bg-orange-100 text-orange-600' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                     title={isPinned ? "Desfijar" : "Fijar arriba"}
                   >
-                     <Pin size={12} strokeWidth={2.5} fill={isPinned ? 'currentColor' : 'none'}/>
+                     <Pin size={14} strokeWidth={2.5} fill={isPinned ? 'currentColor' : 'none'}/>
                   </button>
                   <button
-                     onClick={(e) => { e.stopPropagation(); onEditGroup(group); }}
+                     onClick={(e) => {
+                        e.stopPropagation();
+                        onEditGroup(group);
+                     }}
                      className="w-7 h-7 flex items-center justify-center rounded-full bg-blue-50 text-[#007AFF] hover:bg-blue-100 hover:scale-105 active:scale-95 transition-all"
+                     title="Editar Categoría"
                   >
-                     <Pencil size={12} strokeWidth={2.5}/>
+                     <Pencil size={14} strokeWidth={2.5}/>
                   </button>
                   <button
-                     onClick={(e) => { e.stopPropagation(); onDeleteGroup(group); }}
+                     onClick={(e) => {
+                        e.stopPropagation();
+                        onDeleteGroup(group);
+                     }}
                      className="w-7 h-7 flex items-center justify-center rounded-full bg-red-50 text-red-500 hover:bg-red-100 hover:scale-105 active:scale-95 transition-all"
+                     title="Eliminar Categoría Completa"
                   >
-                     <Trash2 size={12} strokeWidth={2.5}/>
+                     <Trash2 size={14} strokeWidth={2.5}/>
                   </button>
                 </>
              )}
              <div className={`w-7 h-7 flex items-center justify-center rounded-full transition-all duration-300 ${expanded ? 'bg-gray-200 rotate-180' : 'bg-gray-100'}`}>
-                <ChevronDown size={14} className="text-gray-500" strokeWidth={2.5}/>
+                <ChevronDown size={16} className="text-gray-500" strokeWidth={2.5}/>
              </div>
           </div>
         </div>
         
+        {/* Barra de progreso */}
         <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden shadow-inner">
            <div className={`h-full rounded-full transition-all duration-1000 ease-out ${isAllDone ? 'bg-[#34C759]' : 'bg-[#007AFF]'}`} style={{ width: `${progress}%` }}></div>
         </div>
       </div>
 
+      {/* Lista Desplegable (Sub-Metas) */}
       <div className={`transition-all duration-500 ease-in-out ${expanded ? 'max-h-[3000px] opacity-100' : 'max-h-0 opacity-0'} bg-gray-50/30`}>
-        <div className="px-2 pb-2 flex flex-col gap-1.5">
+        <div className="px-2.5 pb-2.5 pt-1 flex flex-col gap-2">
            {sortedHabits.map(habit => (
              <div key={habit.id} className="relative">
-                <div className="absolute left-[16px] top-[-8px] bottom-4 w-[2px] bg-gray-200/60 -z-10 rounded-full hidden sm:block"></div>
-                <div className="relative z-10 sm:pl-2">
+                {/* Línea visual conectora */}
+                <div className="absolute left-[16px] top-[-10px] bottom-5 w-[2px] bg-gray-200/60 -z-10 rounded-full hidden sm:block"></div>
+                <div className="relative z-10 pl-0 sm:pl-1">
                    <HabitCard
                      habit={habit} computedStreak={habitStreaks[habit.id] || 0} isPendingMode={isPendingMode} isEditing={isEditing}
                      onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} onMoveToToday={onMoveToToday}
@@ -341,7 +360,7 @@ const HabitCard = ({
       onDragOver={onDragOver}
       onDrop={(e) => onDrop(e, habit.id)}
       onClick={() => !isPendingMode && onToggle(habit.id)}
-      className={`group flex flex-col p-3 md:p-4 bg-white rounded-[20px] transition-all duration-400 ease-out ${
+      className={`group flex flex-col p-3.5 md:p-4 bg-white rounded-[20px] transition-all duration-400 ease-out ${
         isEditing && !isPendingMode && !habit.completed ? 'cursor-grab active:cursor-grabbing hover:bg-gray-50 border-gray-200' : ''
       } ${!isEditing && !isPendingMode ? 'cursor-pointer active:scale-[0.98]' : ''} ${
         habit.completed && !isEditing
@@ -350,28 +369,28 @@ const HabitCard = ({
       }`}
     >
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3 overflow-hidden flex-1">
+        <div className="flex items-center gap-2.5 md:gap-3 overflow-hidden flex-1">
           {isEditing && !isPendingMode && (
             <div className="flex items-center gap-1 flex-shrink-0 mr-1">
               <button onClick={(e) => { e.stopPropagation(); onDelete(habit.id); }} className="text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors p-1.5" title="Eliminar">
-                <MinusCircle size={18} className="fill-red-100" />
+                <MinusCircle size={20} className="fill-red-100" />
               </button>
               <button onClick={(e) => { e.stopPropagation(); onEdit(habit); }} className="text-[#007AFF] hover:text-[#006ae6] hover:bg-blue-50 rounded-full transition-colors p-1.5" title="Editar">
-                <Pencil size={16} className="fill-blue-100" />
+                <Pencil size={18} className="fill-blue-100" />
               </button>
             </div>
           )}
 
           {!hideIcon ? (
-            <div className={`flex-shrink-0 w-10 h-10 rounded-[14px] flex items-center justify-center text-white ${habit.color} ${isPendingMode ? 'opacity-50 grayscale' : ''}`}>
+            <div className={`flex-shrink-0 w-10 h-10 md:w-11 md:h-11 rounded-[14px] flex items-center justify-center text-white ${habit.color} ${isPendingMode ? 'opacity-50 grayscale' : ''}`}>
               <IconComponent size={20} strokeWidth={2.2} />
             </div>
           ) : (
             <div className={`w-2.5 h-2.5 rounded-full ${habit.color} flex-shrink-0 mx-1 shadow-sm`}></div>
           )}
           
-          <div className="min-w-0 flex-1 pr-2">
-            <h3 className={`font-semibold text-[15px] md:text-[16px] tracking-tight truncate transition-colors duration-300 ${habit.completed && !isEditing ? 'text-gray-400 line-through decoration-2' : 'text-gray-900'}`} title={habit.name}>
+          <div className="min-w-0 flex-1 pr-1">
+            <h3 className={`font-semibold text-[14px] md:text-[15px] tracking-tight truncate transition-colors duration-300 ${habit.completed && !isEditing ? 'text-gray-400 line-through decoration-2' : 'text-gray-900'}`} title={habit.name}>
               {habit.name}
             </h3>
             <div className="flex items-center gap-1 mt-0.5">
@@ -380,7 +399,7 @@ const HabitCard = ({
               ) : (
                 <>
                   <Flame size={12} className={computedStreak > 0 ? 'text-orange-500 flex-shrink-0' : 'text-gray-300 flex-shrink-0'} strokeWidth={2.5} />
-                  <span className={`text-[11px] font-medium truncate tracking-wide ${computedStreak > 0 ? 'text-orange-600' : 'text-gray-400'}`}>
+                  <span className={`text-[11px] md:text-[12px] font-medium truncate tracking-wide ${computedStreak > 0 ? 'text-orange-600' : 'text-gray-400'}`}>
                     {computedStreak} {computedStreak === 1 ? 'día' : 'días'} racha
                   </span>
                 </>
@@ -390,12 +409,12 @@ const HabitCard = ({
         </div>
 
         {isPendingMode ? (
-          <button onClick={() => onMoveToToday(habit.id)} className="flex-shrink-0 ml-1 px-3 py-1.5 bg-[#007AFF] text-white text-[11px] font-bold rounded-full flex items-center gap-1 hover:bg-[#006ae6] transition-all active:scale-95">
+          <button onClick={() => onMoveToToday(habit.id)} className="flex-shrink-0 ml-1 px-3 py-1.5 bg-[#007AFF] text-white text-[12px] font-bold rounded-full flex items-center gap-1 hover:bg-[#006ae6] transition-all active:scale-95">
             <span className="hidden sm:inline">Añadir</span> <ArrowRight size={14} />
           </button>
         ) : isEditing && !habit.completed ? (
           <div className="flex items-center gap-1 flex-shrink-0 ml-1">
-            <div className="flex flex-col items-center justify-center bg-gray-50 rounded-xl p-0.5 border border-gray-100 shadow-sm">
+            <div className="flex flex-col items-center justify-center bg-gray-50 rounded-[10px] p-0.5 border border-gray-100 shadow-sm">
               <button onClick={(e) => { e.stopPropagation(); onMove(habit.id, 'up'); }} className="text-gray-400 hover:text-black active:scale-90 p-0.5">
                 <ChevronUp size={16} strokeWidth={3} />
               </button>
@@ -403,21 +422,22 @@ const HabitCard = ({
                 <ChevronDown size={16} strokeWidth={3} />
               </button>
             </div>
-            <div className="hidden sm:flex items-center justify-center text-gray-300 cursor-grab active:cursor-grabbing px-1">
+            <div className="hidden sm:flex items-center justify-center text-gray-300 cursor-grab active:cursor-grabbing px-1.5">
               <GripVertical size={20} />
             </div>
           </div>
         ) : (
-          <div className={`flex-shrink-0 ml-1 w-7 h-7 rounded-full border-[2px] flex items-center justify-center transition-all duration-500 ease-out ${habit.completed ? 'bg-[#34C759] border-[#34C759] text-white scale-110' : 'border-gray-200 text-transparent group-hover:border-gray-300 group-hover:scale-105'}`}>
+          <div className={`flex-shrink-0 ml-1 w-6 h-6 md:w-7 md:h-7 rounded-full border-[2px] flex items-center justify-center transition-all duration-500 ease-out ${habit.completed ? 'bg-[#34C759] border-[#34C759] text-white scale-110' : 'border-gray-200 text-transparent group-hover:border-gray-300 group-hover:scale-105'}`}>
             <Check size={14} strokeWidth={3.5} />
           </div>
         )}
       </div>
 
+      {/* Renderizado de Notas */}
       {habit.notes && !isEditing && (
-        <div className={`mt-2 mb-0.5 pl-[48px] pr-2 transition-all ${hideIcon ? 'pl-6' : ''}`}>
-           <div className={`px-2.5 py-2 rounded-[12px] text-[11px] md:text-[12px] leading-snug whitespace-pre-wrap flex gap-1.5 ${habit.completed ? 'bg-gray-50 text-gray-400' : 'bg-blue-50/50 text-gray-600 border border-blue-100/50'}`}>
-              <AlignLeft size={12} className="flex-shrink-0 mt-[2px] opacity-50" />
+        <div className={`mt-2 mb-1 pl-10 pr-1 transition-all ${hideIcon ? 'pl-5' : ''}`}>
+           <div className={`p-2.5 rounded-[12px] text-[12px] leading-relaxed whitespace-pre-wrap flex gap-1.5 ${habit.completed ? 'bg-gray-50 text-gray-400' : 'bg-blue-50/50 text-gray-600 border border-blue-100/50'}`}>
+              <AlignLeft size={12} className="flex-shrink-0 mt-0.5 opacity-50" />
               <span>{habit.notes}</span>
            </div>
         </div>
@@ -463,13 +483,16 @@ const App = () => {
   const [syncStatus, setSyncStatus] = useState('connecting');
   const [draggedHabitId, setDraggedHabitId] = useState(null);
 
-  const [filterMode, setFilterMode] = useState('all');
+  // Filtros
+  const [filterMode, setFilterMode] = useState('all'); // 'all' | 'pending' | 'completed'
   const [categoryFilter, setCategoryFilter] = useState('all');
 
+  // Modal Principal: single | bulk | category
   const [modalMode, setModalMode] = useState('single');
   const [categoryInput, setCategoryInput] = useState('');
   const [bulkItems, setBulkItems] = useState(['', '', '']);
 
+  // Modal Edición Categoría Masiva
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [categoryToEditStr, setCategoryToEditStr] = useState('');
   const [editCatName, setEditCatName] = useState('');
@@ -477,6 +500,7 @@ const App = () => {
   const [editCatIcon, setEditCatIcon] = useState('Target');
   const [editCatIconCategory, setEditCatIconCategory] = useState(Object.keys(ICON_CATEGORIES)[0]);
 
+  // Tutorial & Confetti
   const [showTutorial, setShowTutorial] = useState(false);
   const [tutorialStep, setTutorialStep] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -491,9 +515,9 @@ const App = () => {
   const [selectedIconCategory, setSelectedIconCategory] = useState(Object.keys(ICON_CATEGORIES)[0]);
   const [selectedIcon, setSelectedIcon] = useState('Target');
   
-  const [scheduleMode, setScheduleMode] = useState('single');
+  const [scheduleMode, setScheduleMode] = useState('single'); // 'single', 'range', 'recurring'
   const [rangeEndDate, setRangeEndDate] = useState(todayStrLocal);
-  const [recurringDays, setRecurringDays] = useState([1,2,3,4,5]); 
+  const [recurringDays, setRecurringDays] = useState([1,2,3,4,5]); // Default: Mon-Fri
 
   const [progressView, setProgressView] = useState('daily');
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
@@ -519,6 +543,7 @@ const App = () => {
      return [...new Set([...derived, ...custom])];
   }, [habits, userProfile?.customCategories]);
 
+  // Cálculo Dinámico e Inteligente de Rachas por Meta
   const habitStreaks = useMemo(() => {
     const streaks = {};
     const habitsByName = {};
@@ -615,6 +640,7 @@ const App = () => {
      setShowTutorial(true);
   };
 
+  // Recordatorio 20:00 PM
   useEffect(() => {
     if (!notificationsEnabled) return;
     const checkTime = setInterval(() => {
@@ -684,6 +710,7 @@ const App = () => {
     return () => unsubscribe();
   }, [user, todayStrLocal]);
 
+  // Limpieza automática de la Papelera (48 hrs)
   useEffect(() => {
      if (!user || trashedHabits.length === 0) return;
      const now = Date.now();
@@ -699,31 +726,41 @@ const App = () => {
      }
   }, [trashedHabits, user]);
 
+  // --- CEREBRO PRINCIPAL DE EXPERIENCIA (VIGILANTE SILENCIOSO DE DÍAS PERFECTOS) ---
   useEffect(() => {
     if (!user || !userProfile || allRawHabits.length === 0) return;
     
     const timer = setTimeout(() => {
        const activeHabits = allRawHabits.filter(h => !h.deletedAt && !h.isCategoryPlaceholder);
-       const targetDates = [...new Set(activeHabits.map(h => h.date))].filter(d => d <= todayStrLocal);
+       
+       // Evaluar días pasados y días que ya tenían bono (por si se borraron las metas)
+       const activeDates = activeHabits.map(h => h.date);
+       const bonusDates = Object.keys(userProfile.bonuses || {});
+       
+       // SOLO evaluamos días anteriores a hoy (00:00) para validar que el día terminó por completo
+       const targetDates = [...new Set([...activeDates, ...bonusDates])].filter(d => d < todayStrLocal);
        
        let xpCorrection = 0;
        let newBonuses = { ...(userProfile.bonuses || {}) };
        let logsBatch = [];
        let needsUpdate = false;
-       let perfectDayAchievedToday = false;
+       let newlyAwarded = false;
 
        targetDates.forEach(date => {
            const dayHabits = activeHabits.filter(h => h.date === date);
+           // Para ser perfecto, debe tener al menos una meta y que todas estén completas
            const isPerfect = dayHabits.length > 0 && dayHabits.every(h => h.completed);
            const hasBonus = !!userProfile.bonuses?.[date];
 
            if (isPerfect && !hasBonus) {
+               // Se otorga el bono ya que el día cerró perfecto
                xpCorrection += 25;
                newBonuses[date] = true;
                logsBatch.push({ type: 'set', id: 'bonus_' + date, data: { desc: `Día perfecto: ${date}`, xp: 25, ts: Date.now() } });
                needsUpdate = true;
-               if (date === todayStrLocal) perfectDayAchievedToday = true;
-           } else if (!isPerfect && hasBonus && date < todayStrLocal) {
+               newlyAwarded = true;
+           } else if (!isPerfect && hasBonus) {
+               // Si dejó de ser perfecto (por desmarcar o eliminar metas), se retira el bono
                xpCorrection -= 25;
                delete newBonuses[date];
                logsBatch.push({ type: 'delete', id: 'bonus_' + date });
@@ -751,14 +788,14 @@ const App = () => {
            });
            
            if (xpCorrection > 0) {
-               showToast(`¡Bono validado! +${xpCorrection} XP`);
-               if (perfectDayAchievedToday) {
+               showToast(`¡Bono de Día Perfecto validado! +${xpCorrection} XP`);
+               if (newlyAwarded) {
                    setShowConfetti(true);
                    if (soundEnabled && allDoneSound.current) allDoneSound.current.play().catch(e=>console.log(e));
                    setTimeout(() => setShowConfetti(false), 4500);
                }
            } else if (xpCorrection < 0) {
-               showToast(`Día perfecto roto. ${xpCorrection} XP`);
+               showToast(`Día perfecto invalidado. ${xpCorrection} XP`);
            }
        }
     }, 1500); 
@@ -785,7 +822,11 @@ const App = () => {
 
   const showConfirm = (title, message, onConfirm, confirmText = 'Confirmar', isDestructive = false) => {
     setConfirmModal({
-        visible: true, title, message, confirmText, isDestructive,
+        visible: true,
+        title,
+        message,
+        confirmText,
+        isDestructive,
         onConfirm: () => {
             setConfirmModal(prev => ({ ...prev, visible: false }));
             onConfirm();
@@ -793,6 +834,7 @@ const App = () => {
     });
   };
 
+  // Toggle con Lógica Individual de Experiencia (+ Bonos de Racha)
   const toggleHabit = (id, skipToast = false) => {
     if (isEditing) return;
     const habitToToggle = habits.find((h) => h.id === id);
@@ -807,6 +849,7 @@ const App = () => {
       completionSound.current.play().catch((e) => console.log('Audio silenciado:', e));
     }
 
+    // Calcular racha previa dinámicamente para otorgar bonos de 7, 30 y 365 días
     let currentStreakBeforeToggle = 0;
     let checkDate = new Date(habitToToggle.date + 'T12:00:00');
     while (true) {
@@ -832,6 +875,7 @@ const App = () => {
         toastMsgs.push('Meta completada +10 XP');
         logAdditions.push({ id: `habit_${id}_${habitToToggle.date}`, desc: `Meta: ${habitToToggle.name}`, xp: 10 });
         
+        // Bonos de racha de metas individuales
         if (newStreak === 7) { 
             xpToAdd += 75; 
             toastMsgs.push('¡Semana de Racha! +75 XP'); 
@@ -876,6 +920,7 @@ const App = () => {
     if (!skipToast) {
       const msg = isNowCompleted ? toastMsgs.join(' • ') : `Meta desmarcada. ${xpToAdd} XP`;
       showToast(msg, () => {
+         // Deshacer acción individual
          withSync(async () => {
              const batch = writeBatch(db);
              batch.set(doc(db, 'artifacts', appId, 'users', user.uid, 'habits', id), { completed: wasCompleted }, { merge: true });
@@ -906,7 +951,11 @@ const App = () => {
 
   const executeTrash = (habitsToTrashArray) => {
     let xpLost = 0;
-    habitsToTrashArray.forEach(h => { if (h.completed) xpLost += 10; });
+    habitsToTrashArray.forEach(h => {
+        if (h.completed) {
+            xpLost += 10;
+        }
+    });
 
     withSync(async () => {
       const batch = writeBatch(db);
@@ -916,6 +965,7 @@ const App = () => {
             batch.delete(doc(db, 'artifacts', appId, 'users', user.uid, 'xp_logs', `habit_${h.id}_${h.date}`));
         }
       });
+      
       if (xpLost > 0) {
           batch.set(doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'data'), { xp: increment(-xpLost) }, { merge: true });
       }
@@ -1119,6 +1169,7 @@ const App = () => {
     }, { merge: true });
   };
 
+  // Filtrado de metas en pantalla
   const rawCurrentGoals = useMemo(() => habits.filter((h) => h.date === selectedDateStr), [habits, selectedDateStr]);
   const rawPendingGoals = useMemo(() => habits.filter((h) => h.date < todayStrLocal && !h.completed), [habits, todayStrLocal]);
 
@@ -1133,10 +1184,12 @@ const App = () => {
   const currentGoals = useMemo(() => applyFilters(rawCurrentGoals), [rawCurrentGoals, filterMode, categoryFilter]);
   const pendingGoals = useMemo(() => applyFilters(rawPendingGoals), [rawPendingGoals, filterMode, categoryFilter]);
 
+  // Lógica para agrupar metas por categoría
   const groupHabits = (habitsList) => {
     const grouped = [];
     const categoryMap = {};
 
+    // Sort complted to bottom generally if not in category
     const sortedList = [...habitsList].sort((a,b) => {
         if (a.completed !== b.completed) return a.completed ? 1 : -1;
         return a.order - b.order;
@@ -1169,6 +1222,7 @@ const App = () => {
         }
     });
 
+    // Sort categories: Pinned first, then by order
     grouped.sort((a, b) => {
         const aPinned = userProfile?.pinnedCategories?.includes(a.name) ? 1 : 0;
         const bPinned = userProfile?.pinnedCategories?.includes(b.name) ? 1 : 0;
@@ -1261,6 +1315,7 @@ const App = () => {
             });
         });
 
+        // Actualizar perfil de Pines
         const currentPins = userProfile?.pinnedCategories || [];
         if (currentPins.includes(categoryToEditStr)) {
             const newPins = currentPins.map(p => p === categoryToEditStr ? editCatName.trim() : p);
@@ -1347,7 +1402,7 @@ const App = () => {
           datesToCreate = getDatesInRange(selectedDateStr, rangeEndDate);
       } else if (scheduleMode === 'recurring') {
           let curr = new Date(selectedDateStr + 'T12:00:00');
-          let limit = 56; 
+          let limit = 56; // 8 semanas vista
           while(limit > 0) {
               if (recurringDays.includes(curr.getDay())) datesToCreate.push(getFormatDateStr(curr));
               curr.setDate(curr.getDate() + 1);
@@ -1494,6 +1549,7 @@ const App = () => {
     reader.readAsText(file);
   };
 
+  // Profile Analytics
   const totalCompletedGoals = habits.filter((h) => h.completed).length;
   const bestStreakGlobal = Math.max(0, ...Object.values(habitStreaks), 0);
   const activeStreakGlobal = Math.max(0, ...rawCurrentGoals.map(h => habitStreaks[h.id] || 0), 0);
@@ -1520,10 +1576,11 @@ const App = () => {
     return d.toLocaleDateString('es-ES', { weekday: 'long', month: 'long', day: 'numeric' });
   };
 
+  // Generador Datos Heatmap (Últimos 28 días)
   const heatmapData = useMemo(() => {
      const data = [];
      let start = new Date(todayStrLocal + 'T12:00:00');
-     start.setDate(start.getDate() - 27); 
+     start.setDate(start.getDate() - 27); // 28 días contando hoy
 
      for(let i=0; i<28; i++) {
          const dateStr = getFormatDateStr(start);
@@ -1545,6 +1602,7 @@ const App = () => {
     );
   }
 
+  // --- PANTALLA DE LOGIN ---
   if (!user) {
     return (
       <div className="min-h-screen bg-[#F2F2F7] flex flex-col items-center justify-center p-6 text-[#1D1D1F] animate-in fade-in duration-700">
@@ -1557,7 +1615,10 @@ const App = () => {
         </p>
 
         <div className="w-full max-w-[340px] space-y-4">
-          <button onClick={loginWithGoogle} className="w-full flex items-center justify-center gap-3 bg-white border border-black/[0.05] text-gray-800 font-bold py-4 px-4 rounded-[24px] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 active:scale-95">
+          <button
+            onClick={loginWithGoogle}
+            className="w-full flex items-center justify-center gap-3 bg-white border border-black/[0.05] text-gray-800 font-bold py-4 px-4 rounded-[24px] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 active:scale-95"
+          >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
               <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
@@ -1567,7 +1628,10 @@ const App = () => {
             Continuar con Google
           </button>
           
-          <button onClick={loginAsGuest} className="w-full flex items-center justify-center gap-3 bg-[#007AFF] text-white font-bold py-4 px-4 rounded-[24px] shadow-sm hover:bg-[#006ae6] hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 active:scale-95">
+          <button
+            onClick={loginAsGuest}
+            className="w-full flex items-center justify-center gap-3 bg-[#007AFF] text-white font-bold py-4 px-4 rounded-[24px] shadow-sm hover:bg-[#006ae6] hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 active:scale-95"
+          >
             Ingresar como invitado
           </button>
         </div>
@@ -1575,6 +1639,7 @@ const App = () => {
     );
   }
 
+  // --- MODAL ONBOARDING (REGISTRO DE NOMBRE) ---
   if (user && userProfile && (!userProfile.firstName || !userProfile.lastName)) {
     return (
       <div className="min-h-screen bg-[#F2F2F7] flex flex-col items-center justify-center p-6 animate-in fade-in duration-500">
@@ -1586,9 +1651,21 @@ const App = () => {
              <p className="text-[15px] text-gray-500 mb-8 leading-relaxed">Para personalizar tu experiencia y seguir tu progreso, ¿cómo te llamas?</p>
              
              <form onSubmit={saveProfileName} className="space-y-4">
-                 <input type="text" required placeholder="Nombre" value={tempFName} onChange={(e) => setTempFName(e.target.value)} className="w-full bg-[#F2F2F7] border border-transparent rounded-[20px] px-5 py-4 text-[16px] font-medium text-gray-900 focus:bg-white focus:border-[#007AFF] focus:ring-4 focus:ring-[#007AFF]/10 transition-all outline-none" />
-                 <input type="text" required placeholder="Apellido" value={tempLName} onChange={(e) => setTempLName(e.target.value)} className="w-full bg-[#F2F2F7] border border-transparent rounded-[20px] px-5 py-4 text-[16px] font-medium text-gray-900 focus:bg-white focus:border-[#007AFF] focus:ring-4 focus:ring-[#007AFF]/10 transition-all outline-none" />
-                 <button type="submit" disabled={!tempFName.trim() || !tempLName.trim()} className="w-full bg-[#007AFF] text-white rounded-[20px] py-4 mt-4 font-bold text-[16px] hover:bg-[#006ae6] shadow-sm hover:shadow-md transition-all duration-300 disabled:opacity-50 mt-8">
+                 <input 
+                    type="text" required placeholder="Nombre" 
+                    value={tempFName} onChange={(e) => setTempFName(e.target.value)}
+                    className="w-full bg-[#F2F2F7] border border-transparent rounded-[20px] px-5 py-4 text-[16px] font-medium text-gray-900 focus:bg-white focus:border-[#007AFF] focus:ring-4 focus:ring-[#007AFF]/10 transition-all outline-none"
+                 />
+                 <input 
+                    type="text" required placeholder="Apellido" 
+                    value={tempLName} onChange={(e) => setTempLName(e.target.value)}
+                    className="w-full bg-[#F2F2F7] border border-transparent rounded-[20px] px-5 py-4 text-[16px] font-medium text-gray-900 focus:bg-white focus:border-[#007AFF] focus:ring-4 focus:ring-[#007AFF]/10 transition-all outline-none"
+                 />
+                 <button 
+                    type="submit" 
+                    disabled={!tempFName.trim() || !tempLName.trim()}
+                    className="w-full bg-[#007AFF] text-white rounded-[20px] py-4 mt-4 font-bold text-[16px] hover:bg-[#006ae6] shadow-sm hover:shadow-md transition-all duration-300 disabled:opacity-50 mt-8"
+                 >
                     Comenzar aventura
                  </button>
              </form>
@@ -1597,23 +1674,66 @@ const App = () => {
     );
   }
 
+  // --- APP PRINCIPAL ---
   return (
     <div className="min-h-screen bg-[#F2F2F7] text-[#1D1D1F] font-sans selection:bg-[#007AFF]/20 pb-32 transition-colors duration-500">
       
-      {/* Estilos Globales iOS */}
+      {/* Estilos Globales para Evitar Rebote en iOS y Animaciones */}
       <style dangerouslySetInnerHTML={{__html: `
-        body { overscroll-behavior-y: none; -webkit-overflow-scrolling: touch; touch-action: manipulation; }
-        input, textarea, button, select, a { -webkit-tap-highlight-color: transparent; }
-        input[type="text"], input[type="date"], textarea { font-size: 16px !important; }
-        .category-scrollbar::-webkit-scrollbar { height: 5px; }
+        body { 
+          overscroll-behavior-y: none; 
+          -webkit-overflow-scrolling: touch; 
+          touch-action: manipulation;
+        }
+        input, textarea, button, select, a { 
+          -webkit-tap-highlight-color: transparent; 
+        }
+        .category-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
         .category-scrollbar::-webkit-scrollbar-track { background: transparent; border-radius: 10px; }
         .category-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
         .category-scrollbar::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
-        @keyframes fall { 0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; } 100% { transform: translateY(110vh) rotate(360deg); opacity: 0; } }
+        
+        @keyframes fall {
+            0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+        }
         .confetti-piece { position: absolute; top: -20px; animation: fall linear forwards; }
       `}} />
 
       {showConfetti && <ConfettiOverlay />}
+
+      {/* Tutorial Onboarding Modal */}
+      {showTutorial && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[#F2F2F7] animate-in fade-in duration-500">
+           <div className="flex flex-col items-center justify-center p-8 text-center max-w-sm w-full">
+              {TUTORIAL_STEPS.map((stepData, index) => {
+                const StepIcon = stepData.icon;
+                return tutorialStep === index && (
+                   <div key={index} className="animate-in slide-in-from-right-8 duration-500 fade-in w-full">
+                      <div className={`w-24 h-24 rounded-[32px] flex items-center justify-center shadow-sm mb-8 mx-auto ${stepData.color} ${stepData.bg}`}>
+                         <StepIcon size={48} strokeWidth={2.5} />
+                      </div>
+                      <h2 className="text-[28px] font-extrabold text-gray-900 tracking-tight leading-none mb-4">{stepData.title}</h2>
+                      <p className="text-[17px] text-gray-500 font-medium leading-relaxed px-2 min-h-[80px]">{stepData.desc}</p>
+                   </div>
+                );
+              })}
+
+              <div className="flex gap-2 mt-12 mb-8">
+                 {TUTORIAL_STEPS.map((_, step) => (
+                   <div key={step} className={`h-2 rounded-full transition-all duration-300 ${tutorialStep === step ? 'w-6 bg-[#007AFF]' : 'w-2 bg-gray-300'}`} />
+                 ))}
+              </div>
+
+              <button 
+                 onClick={() => tutorialStep < TUTORIAL_STEPS.length - 1 ? setTutorialStep(s => s+1) : completeTutorial()} 
+                 className="w-full bg-[#007AFF] text-white font-bold py-4 rounded-[20px] shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-95 transition-all text-[16px]"
+              >
+                 {tutorialStep < TUTORIAL_STEPS.length - 1 ? 'Siguiente' : '¡Empezar a jugar!'}
+              </button>
+           </div>
+        </div>
+      )}
 
       {/* Toast Deshacer (Undo) */}
       <div className={`fixed bottom-24 left-1/2 -translate-x-1/2 z-[100] transition-all duration-300 ease-out ${toast.visible ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-8 opacity-0 scale-95 pointer-events-none'}`}>
@@ -1633,75 +1753,237 @@ const App = () => {
         </div>
       </div>
 
-      {/* HEADER COMPACTO */}
-      <header className="sticky top-0 z-30 bg-[#F2F2F7]/90 backdrop-blur-xl border-b border-black/[0.03] pt-4 md:pt-5 px-4 md:px-6 pb-3 transition-all duration-300">
-        <div className="w-full max-w-md md:max-w-3xl lg:max-w-6xl mx-auto flex flex-col gap-3">
-          
-          {/* Fila 1: Nube, Perfil Compacto, Ajustes */}
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-3">
-               {userProfile && userProfile.firstName && (
-                 <button onClick={() => setIsProfileModalOpen(true)} className="flex items-center gap-2 bg-white/80 hover:bg-white p-1.5 pr-4 rounded-full shadow-sm border border-black/[0.03] transition-all active:scale-95">
-                    <div className="w-8 h-8 bg-[#007AFF] text-white rounded-full flex items-center justify-center text-[12px] font-bold shadow-inner">
-                       {userProfile.firstName.charAt(0)}{userProfile.lastName.charAt(0)}
-                    </div>
-                    <div className="flex flex-col items-start">
-                       <span className="text-[12px] font-extrabold text-gray-900 leading-none">{userProfile.firstName}</span>
-                       <div className="flex items-center gap-1.5 mt-1">
-                          <span className="text-[9px] text-[#007AFF] font-bold uppercase tracking-widest leading-none">Nvl {levelInfo.level}</span>
-                          <div className="w-8 h-1 bg-gray-200 rounded-full overflow-hidden">
-                             <div className="h-full bg-[#007AFF] rounded-full" style={{ width: `${levelInfo.progress}%` }}></div>
-                          </div>
-                       </div>
-                    </div>
+      {/* Prompt Eliminar Múltiple */}
+      {deletePrompt.visible && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
+           <div className="bg-white p-7 rounded-[32px] w-full max-w-sm shadow-xl mx-4 animate-in zoom-in-95 duration-200">
+              <div className="w-12 h-12 bg-red-100 text-red-500 rounded-[20px] flex items-center justify-center mb-4">
+                  <Trash2 size={24} strokeWidth={2.5} />
+              </div>
+              <h3 className="text-xl font-extrabold text-gray-900 mb-2 tracking-tight">Eliminar Meta</h3>
+              <p className="text-gray-500 text-[15px] mb-6 leading-relaxed">Esta meta está programada para varios días. ¿Deseas enviarla a la papelera solo hoy o en todos los días programados?</p>
+              <div className="flex flex-col gap-2.5">
+                 <button onClick={() => confirmDeleteMode('single')} className="w-full py-4 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold rounded-[20px] transition-colors active:scale-95 text-[16px]">Solo este día</button>
+                 <button onClick={() => confirmDeleteMode('all')} className="w-full py-4 bg-red-50 hover:bg-red-100 text-red-600 font-bold rounded-[20px] transition-colors active:scale-95 text-[16px]">En todos los días</button>
+                 <button onClick={() => setDeletePrompt({visible: false, habit: null, related: []})} className="w-full py-4 text-gray-500 font-bold rounded-[20px] transition-colors mt-2 hover:bg-gray-50 active:scale-95 text-[16px]">Cancelar</button>
+              </div>
+           </div>
+        </div>
+      )}
+
+      {/* Modal Universal de Confirmación */}
+      {confirmModal.visible && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
+           <div className="bg-white p-7 rounded-[32px] w-full max-w-sm shadow-xl mx-4 animate-in zoom-in-95 duration-200">
+              <h3 className="text-xl font-extrabold text-gray-900 mb-3 tracking-tight">{confirmModal.title}</h3>
+              <p className="text-gray-500 text-[15px] mb-6 leading-relaxed">{confirmModal.message}</p>
+              <div className="flex flex-col gap-2.5">
+                 <button 
+                    onClick={confirmModal.onConfirm} 
+                    className={`w-full py-4 font-bold rounded-[20px] transition-colors active:scale-95 text-[16px] ${confirmModal.isDestructive ? 'bg-red-50 text-red-600 hover:bg-red-100' : 'bg-[#007AFF] text-white hover:bg-[#006ae6]'}`}
+                 >
+                    {confirmModal.confirmText}
                  </button>
-               )}
-            </div>
-            
-            <div className="flex items-center gap-2.5">
-               <span className="hidden sm:flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-gray-400 mr-2">
-                 {syncStatus === 'connecting' && <><Cloud size={12} className="animate-pulse" /> Conectando</>}
-                 {syncStatus === 'syncing' && <><Cloud size={12} className="text-[#007AFF] animate-bounce" /> Guardando</>}
-                 {syncStatus === 'offline' && <><CloudOff size={12} className="text-gray-400" /> Offline</>}
-                 {syncStatus === 'synced' && <><Cloud size={12} className="text-green-500" /> Sincronizado</>}
-               </span>
-               <button onClick={() => setIsSettingsOpen(true)} className="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-sm text-gray-500 hover:text-[#007AFF] hover:shadow-md transition-all duration-300 active:scale-95">
-                 <Settings size={16} />
-               </button>
-            </div>
-          </div>
+                 <button 
+                    onClick={() => setConfirmModal(prev => ({ ...prev, visible: false }))} 
+                    className="w-full py-4 text-gray-500 font-bold rounded-[20px] transition-colors mt-1 hover:bg-gray-50 active:scale-95 text-[16px]"
+                 >
+                    Cancelar
+                 </button>
+              </div>
+           </div>
+        </div>
+      )}
 
-          {/* Fila 2: Fecha y Acciones */}
-          <div className="flex justify-between items-end">
-            <div className="flex flex-col">
-              <span className="text-[10px] md:text-[11px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">
-                {selectedDateStr === todayStrLocal ? 'Tu Día' : 'Historial'}
-              </span>
-              <h1 className="text-[20px] md:text-[24px] font-extrabold tracking-tight capitalize text-gray-900 leading-none">
-                {getDisplayDate()}
-              </h1>
+      {/* Modal Historial de XP */}
+      {isXpHistoryOpen && (
+         <div className="fixed inset-0 z-[60] flex items-end justify-center md:items-center">
+            <div className="fixed inset-0 bg-black/40 backdrop-blur-md transition-opacity duration-300" onClick={() => setIsXpHistoryOpen(false)}></div>
+            <div className="bg-white w-full max-w-md rounded-t-[36px] md:rounded-[36px] p-6 md:p-8 pt-4 md:pt-6 z-10 animate-in slide-in-from-bottom-8 md:slide-in-from-bottom-0 shadow-2xl flex flex-col max-h-[85vh]">
+               <div className="w-14 h-1.5 bg-gray-200 rounded-full mx-auto mb-6 md:hidden flex-shrink-0"></div>
+               <div className="flex justify-between items-center mb-6 flex-shrink-0">
+                  <h2 className="text-[22px] font-extrabold tracking-tight text-gray-900">Registro de XP</h2>
+                  <button onClick={() => setIsXpHistoryOpen(false)} className="w-10 h-10 bg-[#F2F2F7] rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-200 hover:text-gray-800 transition-colors">
+                     <X size={20} strokeWidth={2.5} />
+                  </button>
+               </div>
+               <div className="overflow-y-auto pr-2 space-y-3 category-scrollbar">
+                  {xpLogs.length === 0 ? (
+                     <p className="text-center text-gray-400 py-10 font-medium text-[16px]">Aún no hay registros de experiencia. ¡Completa tu primera meta!</p>
+                  ) : (
+                     xpLogs.map(log => (
+                        <div key={log.id} className="flex justify-between items-center bg-[#F2F2F7] p-4 rounded-[20px]">
+                           <div>
+                              <p className="text-[14px] font-bold text-gray-800 leading-tight">{log.desc}</p>
+                              <p className="text-[11px] text-gray-400 font-medium mt-1">{new Date(log.ts).toLocaleString()}</p>
+                           </div>
+                           <div className="bg-white px-3 py-1.5 rounded-full shadow-sm">
+                              <span className="text-[13px] font-extrabold text-[#007AFF]">+{log.xp} XP</span>
+                           </div>
+                        </div>
+                     ))
+                  )}
+               </div>
             </div>
+         </div>
+      )}
 
+      {/* Modal Papelera */}
+      {isTrashOpen && (
+         <div className="fixed inset-0 z-[60] flex items-end justify-center md:items-center">
+            <div className="fixed inset-0 bg-black/40 backdrop-blur-md transition-opacity duration-300" onClick={() => setIsTrashOpen(false)}></div>
+            <div className="bg-white w-full max-w-md rounded-t-[36px] md:rounded-[36px] p-6 md:p-8 pt-4 md:pt-6 z-10 animate-in slide-in-from-bottom-8 md:slide-in-from-bottom-0 shadow-2xl flex flex-col max-h-[85vh]">
+               <div className="w-14 h-1.5 bg-gray-200 rounded-full mx-auto mb-6 md:hidden flex-shrink-0"></div>
+               <div className="flex justify-between items-center mb-6 flex-shrink-0">
+                  <h2 className="text-[22px] font-extrabold tracking-tight text-gray-900 flex items-center gap-2">
+                      <Trash size={22} className="text-gray-400" /> Papelera
+                  </h2>
+                  <div className="flex gap-2">
+                      {trashedHabits.length > 0 && (
+                         <button onClick={emptyTrashNow} className="px-4 h-10 bg-red-50 text-red-600 font-bold text-[13px] rounded-full hover:bg-red-100 transition-colors">
+                             Vaciar
+                         </button>
+                      )}
+                      <button onClick={() => setIsTrashOpen(false)} className="w-10 h-10 bg-[#F2F2F7] rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-200 hover:text-gray-800 transition-colors">
+                         <X size={20} strokeWidth={2.5} />
+                      </button>
+                  </div>
+               </div>
+               <p className="text-[14px] text-gray-500 mb-4 text-center font-medium bg-[#F2F2F7] p-3 rounded-xl">Las metas aquí se eliminarán definitivamente después de 48 horas.</p>
+               <div className="overflow-y-auto pr-2 space-y-3 category-scrollbar flex-1">
+                  {trashedHabits.length === 0 ? (
+                     <p className="text-center text-gray-400 py-10 font-medium text-[16px]">La papelera está vacía.</p>
+                  ) : (
+                     trashedHabits.map(habit => {
+                        const IconComponent = ICON_MAP[habit.icon] || Target;
+                        return (
+                           <div key={habit.id} className="flex justify-between items-center bg-white border border-gray-100 shadow-sm p-4 rounded-[20px]">
+                              <div className="flex items-center gap-3">
+                                  <div className={`w-10 h-10 rounded-[14px] flex items-center justify-center text-white ${habit.color}`}>
+                                     <IconComponent size={20} strokeWidth={2.5} />
+                                  </div>
+                                  <div>
+                                     <p className="text-[14px] font-bold text-gray-800 leading-tight">{habit.name}</p>
+                                     <p className="text-[11px] text-gray-400 font-medium mt-1">Eliminada el {new Date(habit.deletedAt).toLocaleDateString()}</p>
+                                  </div>
+                              </div>
+                              <div className="flex gap-2">
+                                  <button onClick={() => restoreFromTrash(habit)} className="p-2 bg-green-50 text-green-600 rounded-full hover:bg-green-100 transition-colors" title="Restaurar">
+                                      <RotateCcw size={16} />
+                                  </button>
+                                  <button onClick={() => permanentDeleteFromTrash(habit.id)} className="p-2 bg-red-50 text-red-600 rounded-full hover:bg-red-100 transition-colors" title="Borrar para siempre">
+                                      <Trash2 size={16} />
+                                  </button>
+                              </div>
+                           </div>
+                        );
+                     })
+                  )}
+               </div>
+            </div>
+         </div>
+      )}
+
+      {/* HEADER */}
+      <header className="sticky top-0 z-30 bg-[#F2F2F7]/80 backdrop-blur-xl border-b border-black/[0.03] pt-5 px-4 md:px-6 pb-3 transition-all duration-300">
+        <div className="w-full max-w-md md:max-w-3xl lg:max-w-6xl mx-auto">
+          
+          {/* Header Superior y Botones de Acción */}
+          <div className="flex justify-between items-center mb-3">
+            <span className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-widest text-gray-400">
+              {syncStatus === 'connecting' && <><Cloud size={12} className="animate-pulse" /> <span className="hidden sm:inline">Conectando</span></>}
+              {syncStatus === 'syncing' && <><Cloud size={12} className="text-[#007AFF] animate-bounce" /> <span className="hidden sm:inline">Guardando</span></>}
+              {syncStatus === 'offline' && <><CloudOff size={12} className="text-gray-400" /> <span className="hidden sm:inline">Offline</span></>}
+              {syncStatus === 'synced' && <><Cloud size={12} className="text-green-500" /> <span className="hidden sm:inline">Sincronizado</span></>}
+            </span>
             <div className="flex gap-1.5 items-center">
               {selectedDateStr !== todayStrLocal && (
-                <button onClick={() => setSelectedDateStr(todayStrLocal)} className="px-3 h-8 rounded-full bg-[#007AFF]/10 text-[#007AFF] font-bold text-[12px] flex items-center justify-center transition-all duration-300 animate-in fade-in zoom-in hover:bg-[#007AFF]/20 active:scale-95">
+                <button onClick={() => setSelectedDateStr(todayStrLocal)} className="px-2.5 h-8 rounded-full bg-[#007AFF]/10 text-[#007AFF] font-bold text-[11px] flex items-center justify-center transition-all duration-300 animate-in fade-in zoom-in hover:bg-[#007AFF]/20 active:scale-95">
                   Hoy
                 </button>
               )}
-              <label className="relative w-8 h-8 flex items-center justify-center bg-white rounded-full shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer active:scale-95 border border-black/[0.02]">
-                <input type="date" value={selectedDateStr} onChange={(e) => { if (e.target.value) setSelectedDateStr(e.target.value); }} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+              <label className="relative w-8 h-8 flex items-center justify-center bg-white rounded-full border border-black/[0.03] shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer active:scale-95">
+                <input
+                  type="date"
+                  value={selectedDateStr}
+                  onChange={(e) => { if (e.target.value) setSelectedDateStr(e.target.value); }}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  title="Elegir fecha"
+                />
                 <CalendarDays size={14} className="text-gray-600 pointer-events-none" />
               </label>
-              <button onClick={() => setIsEditing(!isEditing)} className={`h-8 rounded-full flex items-center justify-center transition-all duration-300 shadow-sm border relative z-20 active:scale-95 overflow-hidden ${isEditing ? 'bg-[#34C759] text-white border-[#34C759] w-8' : 'bg-white text-gray-700 border-black/[0.03] hover:shadow-md px-3'}`}>
-                {isEditing ? <Check size={16} strokeWidth={3.5} className="text-white" /> : <span className="text-[12px] font-bold">Editar</span>}
+              
+              <button
+                onClick={() => setIsEditing(!isEditing)}
+                className={`h-8 rounded-full flex items-center justify-center transition-all duration-300 shadow-sm border relative z-20 active:scale-95 overflow-hidden ${
+                  isEditing 
+                    ? 'bg-[#34C759] text-white border-[#34C759] w-8 h-8 flex-shrink-0 shadow-md' 
+                    : 'bg-white text-gray-700 border-black/[0.03] hover:shadow-md px-2.5 w-auto'
+                }`}
+              >
+                {isEditing ? <Check size={14} strokeWidth={3.5} className="text-white" /> : <span className="text-[11px] font-bold">Editar</span>}
+              </button>
+
+              <div className="w-px h-4 bg-black/10 mx-0.5"></div>
+
+              <button onClick={() => setIsProfileModalOpen(true)} className="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-sm text-gray-500 hover:text-[#007AFF] hover:shadow-md transition-all duration-300 active:scale-95">
+                <User size={14} />
+              </button>
+              <button onClick={() => setIsSettingsOpen(true)} className="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-sm text-gray-500 hover:text-[#007AFF] hover:shadow-md transition-all duration-300 active:scale-95">
+                <Settings size={14} />
               </button>
             </div>
           </div>
 
-          {/* Fila 3: Calendario Delgado */}
-          <div className="flex items-center justify-between gap-1 relative mt-1">
-            <button onClick={() => shiftDate(-1)} className="p-1 text-gray-400 hover:text-[#007AFF] transition-colors active:scale-90 z-10"><ChevronLeft size={20} strokeWidth={3} /></button>
-            <div key={calendarKey} className={`flex-1 max-w-3xl mx-auto flex items-stretch justify-between gap-0.5 md:gap-1 bg-white/40 backdrop-blur-2xl border border-white/60 shadow-sm rounded-[16px] p-1 relative overflow-hidden animate-in fade-in duration-300 ${slideDirection === 'right' ? 'slide-in-from-right-4' : slideDirection === 'left' ? 'slide-in-from-left-4' : ''}`}>
+          {/* User Profile Header */}
+          {userProfile && userProfile.firstName && (
+            <div 
+               className="mb-4 flex items-center justify-between cursor-pointer group bg-white/40 p-2.5 md:p-3 rounded-[20px] hover:bg-white/80 transition-colors border border-white/50 shadow-sm hover:shadow-md"
+               onClick={() => setIsProfileModalOpen(true)}
+            >
+                <div className="flex gap-2.5 md:gap-3 items-center">
+                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-[16px] bg-[#007AFF] text-white flex items-center justify-center text-[16px] md:text-[18px] font-extrabold shadow-sm group-hover:scale-105 transition-transform">
+                        {userProfile.firstName.charAt(0)}{userProfile.lastName.charAt(0)}
+                    </div>
+                    <div>
+                        <h2 className="text-[15px] md:text-[17px] font-extrabold text-gray-900 leading-tight tracking-tight">
+                            {userProfile.firstName} {userProfile.lastName}
+                        </h2>
+                        <p className="text-[12px] md:text-[13px] text-[#007AFF] font-bold mt-0.5">
+                            Nivel {levelInfo.level} <span className="text-gray-400 font-medium">• {levelInfo.rank}</span>
+                        </p>
+                    </div>
+                </div>
+                <div className="text-right flex flex-col items-end pr-2">
+                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">{levelInfo.currentLevelXp} / {levelInfo.xpForNextLevel} XP</span>
+                     <div className="w-16 md:w-24 h-1.5 bg-gray-200 rounded-full overflow-hidden shadow-inner">
+                          <div className="bg-[#007AFF] h-full rounded-full transition-all duration-1000 ease-out" style={{ width: `${levelInfo.progress}%` }}></div>
+                     </div>
+                </div>
+            </div>
+          )}
+
+          {/* Título del Día en una sola línea */}
+          <div className="flex items-center gap-2.5 mb-3 px-1">
+             <span className="text-[13px] md:text-[14px] font-bold text-gray-400 uppercase tracking-widest">
+               {selectedDateStr === todayStrLocal ? 'Tu Día' : 'Historial'}
+             </span>
+             <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
+             <h1 className="text-[20px] md:text-[24px] leading-none font-extrabold tracking-tight capitalize text-gray-900 m-0">
+               {getDisplayDate()}
+             </h1>
+          </div>
+
+          <div className="flex items-center justify-between gap-1 md:gap-2 relative">
+            <button onClick={() => shiftDate(-1)} className="p-1 text-gray-400 hover:text-[#007AFF] hover:bg-white/60 rounded-full transition-all duration-300 active:scale-90 z-10">
+              <ChevronLeft size={20} strokeWidth={2.5} />
+            </button>
+
+            {/* Barra Unificada de Calendario */}
+            <div 
+               key={calendarKey}
+               className={`flex-1 max-w-3xl mx-auto flex items-stretch justify-between gap-0.5 bg-white/40 backdrop-blur-2xl border border-white/60 shadow-sm rounded-[20px] p-1 relative overflow-hidden animate-in fade-in duration-300 ${slideDirection === 'right' ? 'slide-in-from-right-4' : slideDirection === 'left' ? 'slide-in-from-left-4' : ''}`}
+            >
               {calendarDates.map((d, i) => {
                 const dStr = getFormatDateStr(d);
                 const isSelected = dStr === selectedDateStr;
@@ -1709,37 +1991,60 @@ const App = () => {
                 const isHiddenOnMobile = i === 0 || i === 6;
 
                 return (
-                  <button key={dStr} onClick={() => setSelectedDateStr(dStr)} className={`relative flex-1 flex flex-col items-center justify-center py-1.5 rounded-[12px] transition-all duration-500 ease-out z-10 ${isHiddenOnMobile ? 'hidden sm:flex' : 'flex'} ${isSelected ? 'bg-[#007AFF] text-white shadow-sm scale-[1.02]' : 'text-gray-500 hover:bg-white/70 hover:text-gray-900 hover:scale-[1.02]'}`}>
-                    <span className={`text-[9px] font-bold uppercase tracking-widest transition-colors duration-300 leading-none mb-1 ${isSelected ? 'text-white/90' : 'text-gray-400'}`}>
+                  <button
+                    key={dStr}
+                    onClick={() => setSelectedDateStr(dStr)}
+                    className={`relative flex-1 flex flex-col items-center justify-center py-1 md:py-1.5 rounded-[16px] transition-all duration-500 ease-out z-10 ${
+                      isHiddenOnMobile ? 'hidden sm:flex' : 'flex'
+                    } ${
+                      isSelected
+                        ? 'bg-[#007AFF] text-white shadow-md scale-[1.02]'
+                        : 'text-gray-500 hover:bg-white/70 hover:text-gray-900'
+                    }`}
+                  >
+                    <span className={`text-[8px] md:text-[9px] font-bold uppercase tracking-widest mb-0.5 transition-colors duration-300 leading-none ${isSelected ? 'text-white/90' : 'text-gray-400'}`}>
                       {d.toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', '')}
                     </span>
                     <span className={`text-[14px] md:text-[16px] font-extrabold leading-none transition-colors duration-300 ${isSelected ? 'text-white' : (isToday ? 'text-[#007AFF]' : 'text-gray-800')}`}>
                       {d.getDate()}
                     </span>
+                    {habits.some((h) => h.date === dStr && !h.isCategoryPlaceholder) && (
+                      <div className={`w-1 h-1 rounded-full mt-0.5 transition-colors duration-300 ${isSelected ? 'bg-white' : 'bg-[#007AFF]/40'}`}></div>
+                    )}
+                    {i < 6 && !isSelected && selectedDateStr !== getFormatDateStr(calendarDates[i+1]) && (
+                      <div className="absolute right-[-2px] md:right-[-4px] top-1/4 bottom-1/4 w-[1px] bg-black/[0.04] hidden sm:block"></div>
+                    )}
                   </button>
                 );
               })}
             </div>
-            <button onClick={() => shiftDate(1)} className="p-1 text-gray-400 hover:text-[#007AFF] transition-colors active:scale-90 z-10"><ChevronRight size={20} strokeWidth={3} /></button>
+
+            <button onClick={() => shiftDate(1)} className="p-1 text-gray-400 hover:text-[#007AFF] hover:bg-white/60 rounded-full transition-all duration-300 active:scale-90 z-10">
+              <ChevronRight size={20} strokeWidth={2.5} />
+            </button>
           </div>
 
-          {/* Fila 4: Filtros Pequeños */}
-          <div className="flex gap-1.5 overflow-x-auto pb-1 category-scrollbar snap-x items-center mt-1">
+          {/* Barra de Filtros */}
+          <div className="mt-3 flex gap-2 overflow-x-auto pb-1.5 category-scrollbar snap-x items-center">
              <Filter size={14} className="text-gray-400 flex-shrink-0 ml-1 mr-1" />
-             <button onClick={()=> {setFilterMode('all'); setCategoryFilter('all');}} className={`flex-shrink-0 snap-start px-3 py-1.5 text-[11px] font-bold rounded-full transition-all duration-300 ${filterMode === 'all' && categoryFilter === 'all' ? 'bg-black text-white shadow-sm' : 'bg-white/60 text-gray-600 hover:bg-white'}`}>
+             <button onClick={()=> {setFilterMode('all'); setCategoryFilter('all');}} className={`flex-shrink-0 snap-start px-3 py-1.5 text-[12px] font-bold rounded-full transition-all duration-300 ${filterMode === 'all' && categoryFilter === 'all' ? 'bg-black text-white shadow-sm' : 'bg-white/60 text-gray-600 hover:bg-white'}`}>
                 Todo
              </button>
-             <button onClick={()=> {setFilterMode('pending'); setCategoryFilter('all');}} className={`flex-shrink-0 snap-start px-3 py-1.5 text-[11px] font-bold rounded-full transition-all duration-300 ${filterMode === 'pending' ? 'bg-orange-500 text-white shadow-sm' : 'bg-white/60 text-gray-600 hover:bg-white'}`}>
+             <button onClick={()=> {setFilterMode('pending'); setCategoryFilter('all');}} className={`flex-shrink-0 snap-start px-3 py-1.5 text-[12px] font-bold rounded-full transition-all duration-300 ${filterMode === 'pending' ? 'bg-orange-500 text-white shadow-sm' : 'bg-white/60 text-gray-600 hover:bg-white'}`}>
                 Pendientes
              </button>
-             <button onClick={()=> {setFilterMode('completed'); setCategoryFilter('all');}} className={`flex-shrink-0 snap-start px-3 py-1.5 text-[11px] font-bold rounded-full transition-all duration-300 ${filterMode === 'completed' ? 'bg-[#34C759] text-white shadow-sm' : 'bg-white/60 text-gray-600 hover:bg-white'}`}>
+             <button onClick={()=> {setFilterMode('completed'); setCategoryFilter('all');}} className={`flex-shrink-0 snap-start px-3 py-1.5 text-[12px] font-bold rounded-full transition-all duration-300 ${filterMode === 'completed' ? 'bg-[#34C759] text-white shadow-sm' : 'bg-white/60 text-gray-600 hover:bg-white'}`}>
                 Completadas
              </button>
              
-             {uniqueCategories.length > 0 && <div className="w-px h-4 bg-black/10 mx-1 flex-shrink-0"></div>}
+             {uniqueCategories.length > 0 && <div className="w-px h-4 bg-black/10 mx-0.5 flex-shrink-0"></div>}
              
              {uniqueCategories.map(cat => (
-                <button key={cat} onClick={()=> {setCategoryFilter(cat); setFilterMode('all');}} className={`flex-shrink-0 snap-start px-3 py-1.5 text-[11px] font-bold rounded-full transition-all duration-300 border ${categoryFilter === cat ? 'bg-[#007AFF] text-white border-[#007AFF] shadow-sm' : 'bg-white/60 text-gray-600 border-transparent hover:bg-white hover:border-gray-200'}`}>
+                <button 
+                  key={cat} 
+                  onClick={()=> {setCategoryFilter(cat); setFilterMode('all');}} 
+                  className={`flex-shrink-0 snap-start px-3 py-1.5 text-[12px] font-bold rounded-full transition-all duration-300 border ${categoryFilter === cat ? 'bg-[#007AFF] text-white border-[#007AFF] shadow-sm' : 'bg-white/60 text-gray-600 border-transparent hover:bg-white hover:border-gray-200'}`}
+                >
                   {cat}
                 </button>
              ))}
@@ -1749,15 +2054,65 @@ const App = () => {
       </header>
 
       {/* MAIN CONTENT */}
-      <main className="w-full max-w-md md:max-w-3xl lg:max-w-6xl mx-auto px-4 md:px-6 py-6 space-y-8">
+      <main className="w-full max-w-md md:max-w-3xl lg:max-w-6xl mx-auto px-4 md:px-6 py-4 space-y-6">
         
+        {/* Tarjeta de Progreso */}
+        {(totalCount > 0 || monthlyTotal > 0) && (
+          <div className="bg-white rounded-[20px] p-3.5 md:p-4 shadow-sm border border-black/[0.02] transition-all duration-500 hover:shadow-md">
+            <div className="flex justify-between items-center mb-2.5">
+              <span className="text-[14px] font-bold flex items-center gap-1.5 tracking-tight text-gray-800">
+                <div className="w-6 h-6 rounded-full bg-[#007AFF]/10 flex items-center justify-center text-[#007AFF]">
+                  <Target size={14} />
+                </div>
+                Progreso
+              </span>
+              
+              <div className="flex bg-[#F2F2F7] p-0.5 rounded-full">
+                <button 
+                  onClick={() => setProgressView('daily')}
+                  className={`px-3 py-1 text-[11px] font-bold rounded-full transition-all duration-300 ${progressView === 'daily' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
+                >
+                  Día
+                </button>
+                <button 
+                  onClick={() => setProgressView('monthly')}
+                  className={`px-3 py-1 text-[11px] font-bold rounded-full transition-all duration-300 ${progressView === 'monthly' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
+                >
+                  Mes
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 mb-1 px-1">
+              <div className="flex-1 h-2 bg-[#F2F2F7] rounded-full overflow-hidden shadow-inner">
+                <div
+                  className={`h-full rounded-full transition-all duration-1000 ease-out ${displayProgress === 100 ? 'bg-green-500' : 'bg-[#007AFF]'}`}
+                  style={{ width: `${displayProgress}%` }}
+                ></div>
+              </div>
+              <span className="text-[18px] font-black text-[#007AFF] tracking-tight leading-none w-10 text-right">{displayProgress}%</span>
+            </div>
+            
+            <div className="flex justify-between items-center px-1 mt-0.5">
+              <span className="text-[11px] text-gray-400 font-semibold tracking-wide">
+                {progressView === 'daily' ? 'Hoy' : new Date(selectedDateStr + 'T12:00:00').toLocaleDateString('es-ES', { month: 'short', year: 'numeric' })}
+              </span>
+              <span className="text-[11px] text-gray-500 font-medium">
+                {displayProgress === 100 && displayTotalCount > 0
+                  ? '¡Todas listas! 🎉'
+                  : `${displayCompletedCount} de ${displayTotalCount} metas`}
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* Metas Pendientes */}
         {selectedDateStr === todayStrLocal && pendingGoals.length > 0 && !isEditing && (
           <section>
-            <h2 className="text-[12px] font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2 px-1">
+            <h2 className="text-[13px] font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2 px-2">
               <Inbox size={14} className="text-gray-400" /> Metas Pendientes
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 lg:gap-5">
               {groupedPendingGoals.map((item) => {
                 if (item.isCategoryGroup) {
                   return <CategoryCard key={item.id} group={item} habitStreaks={habitStreaks} isPendingMode={true} isEditing={isEditing} onToggle={toggleHabit} onDelete={deleteHabit} onEdit={openEditModal} onMoveToToday={moveToToday} onMove={moveHabit} onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDragOver={handleDragOver} onDrop={handleDrop} onDeleteGroup={handleDeleteCategory} onAddInsideCategory={openAddModalForCategory} onEditGroup={openEditCategoryModal} onTogglePin={toggleCategoryPin} isPinned={userProfile?.pinnedCategories?.includes(item.name)} />
@@ -1770,11 +2125,11 @@ const App = () => {
 
         {/* Metas del Día */}
         <section>
-            <h2 className="text-[12px] font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2 px-1">
+            <h2 className="text-[13px] font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2 px-2">
               <Calendar size={14} className="text-gray-400" /> Plan del Día
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 lg:gap-5">
               {groupedCurrentGoals.map((item) => {
                 if (item.isCategoryGroup) {
                    return <CategoryCard key={item.id} group={item} habitStreaks={habitStreaks} isPendingMode={false} isEditing={isEditing} onToggle={toggleHabit} onDelete={deleteHabit} onEdit={openEditModal} onMoveToToday={moveToToday} onMove={moveHabit} onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDragOver={handleDragOver} onDrop={handleDrop} onDeleteGroup={handleDeleteCategory} onAddInsideCategory={openAddModalForCategory} onEditGroup={openEditCategoryModal} onTogglePin={toggleCategoryPin} isPinned={userProfile?.pinnedCategories?.includes(item.name)} />
@@ -1783,13 +2138,13 @@ const App = () => {
               })}
 
             {currentGoals.length === 0 && (
-              <div className="col-span-1 md:col-span-2 lg:col-span-3 text-center py-16 px-6 border-[2px] border-dashed border-gray-200/60 rounded-[24px] bg-white/40 transition-all duration-500 hover:bg-white/80">
-                <div className="w-16 h-16 bg-gray-100 rounded-[16px] flex items-center justify-center mx-auto mb-4 shadow-inner">
+              <div className="col-span-1 md:col-span-2 lg:col-span-3 text-center py-12 px-6 border-[2.5px] border-dashed border-gray-200/60 rounded-[28px] bg-white/40 transition-all duration-500 hover:bg-white/80">
+                <div className="w-16 h-16 bg-gray-100 rounded-[20px] flex items-center justify-center mx-auto mb-4 shadow-inner">
                   <CalendarDays size={32} className="text-gray-400" strokeWidth={1.5} />
                 </div>
                 <h3 className="text-[18px] font-bold text-gray-800 mb-1.5 tracking-tight">Día en blanco</h3>
-                <p className="text-gray-500 text-[14px] font-medium max-w-sm mx-auto leading-relaxed">
-                  {selectedDateStr === todayStrLocal ? 'Toca el botón + para organizar tu día.' : 'No hay metas registradas o no coinciden con tu filtro.'}
+                <p className="text-gray-500 text-[14px] font-medium max-w-xs mx-auto leading-relaxed">
+                  {selectedDateStr === todayStrLocal ? 'Toca el botón + para planificar y organizar tu día.' : 'No hay metas registradas o no coinciden con tu filtro.'}
                 </p>
               </div>
             )}
@@ -1797,38 +2152,62 @@ const App = () => {
         </section>
       </main>
 
-      {/* FAB */}
-      <div className="fixed bottom-8 left-0 right-0 md:left-auto md:right-8 pointer-events-none flex justify-center md:justify-end z-40">
-        <button onClick={openAddModal} className="pointer-events-auto flex items-center gap-2.5 bg-[#007AFF] backdrop-blur-md text-white px-6 py-4 rounded-full font-bold text-[16px] shadow-sm hover:shadow-md hover:-translate-y-1 active:scale-95 transition-all duration-300">
-          <Plus size={20} strokeWidth={3} /> <span className="md:hidden lg:inline">Añadir Meta</span>
+      {/* FAB (Floating Action Button) */}
+      <div className="fixed bottom-6 left-0 right-0 md:left-auto md:right-8 pointer-events-none flex justify-center md:justify-end z-40">
+        <button
+          onClick={openAddModal}
+          className="pointer-events-auto flex items-center gap-2 bg-[#007AFF] backdrop-blur-md text-white px-5 py-3 md:px-6 md:py-4 rounded-full font-bold text-[15px] md:text-[16px] shadow-md hover:shadow-lg hover:-translate-y-1 active:scale-95 transition-all duration-300"
+        >
+          <Plus size={20} strokeWidth={2.5} /> <span className="inline">Nueva Meta</span>
         </button>
       </div>
 
-      {/* Modal Editar Categoría Masiva Minimalista */}
+      {/* Modal Editar Categoría Masiva */}
       {isCategoryModalOpen && (
         <div className="fixed inset-0 z-50 flex items-end justify-center md:items-center">
           <div className="fixed inset-0 bg-black/40 backdrop-blur-md transition-opacity duration-300" onClick={() => setIsCategoryModalOpen(false)}></div>
-          <div className="bg-white w-full max-w-md lg:max-w-lg rounded-t-[28px] md:rounded-[28px] p-5 md:p-6 pt-4 md:pt-5 z-10 animate-in slide-in-from-bottom-8 md:slide-in-from-bottom-0 md:zoom-in-95 shadow-xl flex flex-col max-h-[85vh]">
-            <div className="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-5 md:hidden flex-shrink-0"></div>
+          <div className="bg-white w-full max-w-md md:max-w-xl lg:max-w-2xl rounded-t-[28px] md:rounded-[28px] p-5 md:p-6 pt-4 md:pt-5 z-10 animate-in slide-in-from-bottom-8 md:slide-in-from-bottom-0 md:zoom-in-95 shadow-xl flex flex-col max-h-[90vh]">
+            <div className="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-4 md:hidden flex-shrink-0"></div>
             
             <div className="flex justify-between items-center mb-4 flex-shrink-0">
-              <h2 className="text-[20px] font-extrabold tracking-tight text-gray-900">Editar Categoría</h2>
+              <h2 className="text-[20px] md:text-[22px] font-extrabold tracking-tight text-gray-900">
+                Editar Categoría
+              </h2>
               <button onClick={() => setIsCategoryModalOpen(false)} className="w-8 h-8 bg-[#F2F2F7] rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-200 hover:text-gray-800 transition-colors">
                 <X size={18} strokeWidth={2.5} />
               </button>
             </div>
 
-            <form onSubmit={saveCategoryEdit} className="overflow-y-auto pr-1 pb-1 space-y-4 category-scrollbar">
+            <form onSubmit={saveCategoryEdit} className="overflow-y-auto pr-2 pb-2 space-y-4 md:space-y-5 category-scrollbar">
+              <p className="text-[12px] md:text-[13px] text-gray-500 bg-blue-50 text-[#007AFF] p-3 md:p-4 rounded-[16px] font-medium leading-relaxed">
+                 Al guardar, <b>todas</b> las metas que pertenezcan a "{categoryToEditStr}" se actualizarán automáticamente.
+              </p>
+
               <div>
-                <label className="block text-[12px] font-bold text-gray-800 mb-1.5">Nombre</label>
-                <input type="text" autoFocus value={editCatName} onChange={(e) => setEditCatName(e.target.value)} className="w-full bg-[#F2F2F7] border border-transparent rounded-[12px] px-4 py-2.5 text-[14px] font-bold text-gray-900 focus:bg-white focus:border-[#007AFF] focus:ring-2 focus:ring-[#007AFF]/10 transition-all outline-none shadow-sm uppercase" />
+                <label className="block text-[13px] font-bold text-gray-800 mb-2">Nombre de la Categoría</label>
+                <input
+                  type="text"
+                  autoFocus
+                  value={editCatName}
+                  onChange={(e) => setEditCatName(e.target.value)}
+                  className="w-full bg-[#F2F2F7] border border-transparent rounded-[14px] px-4 py-2.5 text-[14px] font-bold text-gray-900 focus:bg-white focus:border-[#007AFF] focus:ring-2 focus:ring-[#007AFF]/10 transition-all outline-none shadow-sm uppercase"
+                />
               </div>
 
               <div>
-                <label className="block text-[12px] font-bold text-gray-800 mb-2">Icono</label>
-                <div className="flex gap-2 overflow-x-auto pb-2 mb-2 snap-x category-scrollbar">
+                <label className="block text-[13px] font-bold text-gray-800 mb-2">Nuevo Icono</label>
+                <div className="flex gap-2 overflow-x-auto pb-2 mb-1.5 snap-x category-scrollbar">
                   {Object.keys(ICON_CATEGORIES).map(cat => (
-                    <button key={cat} type="button" onClick={() => setEditCatIconCategory(cat)} className={`flex-shrink-0 snap-start px-3 py-1 text-[11px] font-bold rounded-full transition-all duration-300 border ${editCatIconCategory === cat ? 'bg-black text-white border-black shadow-sm' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300'}`}>
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => setEditCatIconCategory(cat)}
+                      className={`flex-shrink-0 snap-start px-2.5 py-1 text-[11px] font-bold rounded-full transition-all duration-300 border ${
+                        editCatIconCategory === cat 
+                          ? 'bg-black text-white border-black shadow-sm' 
+                          : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                      }`}
+                    >
                       {cat}
                     </button>
                   ))}
@@ -1837,7 +2216,14 @@ const App = () => {
                   {Object.keys(ICON_CATEGORIES[editCatIconCategory]).map((iconName) => {
                     const IconComp = ICON_CATEGORIES[editCatIconCategory][iconName];
                     return (
-                      <button key={iconName} type="button" onClick={() => setEditCatIcon(iconName)} className={`w-8 h-8 rounded-[10px] flex items-center justify-center transition-all duration-200 mx-auto ${editCatIcon === iconName ? `bg-black text-white shadow-md scale-110` : 'bg-transparent text-gray-500 hover:bg-gray-200'}`}>
+                      <button
+                        key={iconName}
+                        type="button"
+                        onClick={() => setEditCatIcon(iconName)}
+                        className={`w-8 h-8 md:w-9 md:h-9 rounded-[10px] flex items-center justify-center transition-all duration-200 mx-auto ${
+                          editCatIcon === iconName ? `bg-black text-white shadow-md scale-110` : 'bg-transparent text-gray-500 hover:bg-gray-200'
+                        }`}
+                      >
                         <IconComp size={16} strokeWidth={2.5} />
                       </button>
                     );
@@ -1846,101 +2232,171 @@ const App = () => {
               </div>
 
               <div>
-                <label className="flex items-center gap-1.5 text-[12px] font-bold text-gray-800 mb-2">
+                <label className="flex items-center gap-1.5 text-[13px] font-bold text-gray-800 mb-2">
                   <Palette size={14} /> Color
                 </label>
-                <div className="flex flex-wrap gap-2 p-1.5 overflow-visible">
+                <div className="flex flex-wrap gap-2.5 p-1.5 overflow-visible">
                   {HABIT_COLORS.map((color) => (
-                    <button key={color} type="button" onClick={() => setEditCatColor(color)} className={`flex-shrink-0 w-6 h-6 rounded-full ${color} transition-all duration-200 relative ${editCatColor === color ? 'scale-110 shadow-md border-[1.5px] border-white ring-2 ring-black z-10' : 'opacity-80 hover:opacity-100 hover:scale-105 border-2 border-transparent'}`} />
+                    <button
+                      key={color}
+                      type="button"
+                      onClick={() => setEditCatColor(color)}
+                      className={`flex-shrink-0 w-6 h-6 md:w-7 md:h-7 rounded-full ${color} transition-all duration-200 relative ${
+                        editCatColor === color 
+                          ? 'scale-110 shadow-md border-2 border-white ring-[2px] ring-black z-10' 
+                          : 'opacity-80 hover:opacity-100 hover:scale-105 border-2 border-transparent'
+                      }`}
+                    />
                   ))}
                 </div>
               </div>
 
-              <button type="submit" disabled={!editCatName.trim()} className="w-full bg-[#007AFF] text-white rounded-[16px] py-3 font-bold text-[14px] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 mt-2">
-                Actualizar Todo
+              <button
+                type="submit"
+                disabled={!editCatName.trim()}
+                className="w-full bg-[#007AFF] text-white rounded-[16px] py-3 font-bold text-[14px] md:text-[15px] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 mt-1"
+              >
+                Guardar y Actualizar Metas
               </button>
             </form>
           </div>
         </div>
       )}
 
-      {/* Modal Añadir / Editar Meta Minimalista */}
+      {/* Modal Añadir / Editar Meta */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-end justify-center md:items-center">
           <div className="fixed inset-0 bg-black/40 backdrop-blur-md transition-opacity duration-300" onClick={() => setIsModalOpen(false)}></div>
-          <div className="bg-white w-full max-w-md lg:max-w-lg rounded-t-[28px] md:rounded-[28px] p-5 md:p-6 pt-4 md:pt-5 z-10 animate-in slide-in-from-bottom-8 md:slide-in-from-bottom-0 md:zoom-in-95 shadow-xl flex flex-col max-h-[85vh]">
-            <div className="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-5 md:hidden flex-shrink-0"></div>
+          <div className="bg-white w-full max-w-md md:max-w-xl lg:max-w-2xl rounded-t-[28px] md:rounded-[28px] p-5 md:p-6 pt-4 md:pt-5 z-10 animate-in slide-in-from-bottom-8 md:slide-in-from-bottom-0 md:zoom-in-95 shadow-xl flex flex-col max-h-[90vh]">
+            <div className="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-4 md:hidden flex-shrink-0"></div>
             
             <div className="flex justify-between items-center mb-4 flex-shrink-0">
               <h2 className="text-[20px] md:text-[22px] font-extrabold tracking-tight text-gray-900">
-                {habitToEdit ? 'Editar Meta' : (modalMode === 'category' ? 'Nueva Categoría' : 'Añadir')}
+                {habitToEdit ? 'Editar Meta' : (modalMode === 'category' ? 'Nueva Categoría' : 'Nueva Meta')}
               </h2>
               <button onClick={() => setIsModalOpen(false)} className="w-8 h-8 bg-[#F2F2F7] rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-200 hover:text-gray-800 transition-colors">
                 <X size={18} strokeWidth={2.5} />
               </button>
             </div>
 
-            <form onSubmit={saveHabit} className="overflow-y-auto pr-1 pb-1 space-y-4 category-scrollbar">
+            <form onSubmit={saveHabit} className="overflow-y-auto pr-2 pb-2 space-y-4 md:space-y-5 category-scrollbar">
               
               {!habitToEdit && (
                 <div className="flex bg-[#F2F2F7] p-1 rounded-full w-full max-w-[280px] mx-auto mb-2 overflow-x-auto category-scrollbar">
-                  <button type="button" onClick={() => setModalMode('single')} className={`flex-1 py-1 px-1.5 text-[11px] font-bold rounded-full transition-all duration-300 ${modalMode === 'single' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
-                    Individual
+                  <button 
+                    type="button"
+                    onClick={() => setModalMode('single')}
+                    className={`flex-1 min-w-[80px] py-1 px-2 text-[11px] font-bold rounded-full transition-all duration-300 ${modalMode === 'single' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                  >
+                    Una Meta
                   </button>
-                  <button type="button" onClick={() => setModalMode('bulk')} className={`flex-1 py-1 px-1.5 text-[11px] font-bold rounded-full transition-all duration-300 ${modalMode === 'bulk' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
-                    Múltiple
+                  <button 
+                    type="button"
+                    onClick={() => setModalMode('bulk')}
+                    className={`flex-1 min-w-[80px] py-1 px-2 text-[11px] font-bold rounded-full transition-all duration-300 ${modalMode === 'bulk' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                  >
+                    Múltiples
                   </button>
-                  <button type="button" onClick={() => setModalMode('category')} className={`flex-1 py-1 px-1.5 text-[11px] font-bold rounded-full transition-all duration-300 ${modalMode === 'category' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
-                    Categoría
+                  <button 
+                    type="button"
+                    onClick={() => setModalMode('category')}
+                    className={`flex-1 min-w-[90px] py-1 px-2 text-[11px] font-bold rounded-full transition-all duration-300 ${modalMode === 'category' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                  >
+                    Solo Categoría
                   </button>
                 </div>
               )}
 
               {modalMode === 'category' && (
                   <div>
-                    <label className="block text-[12px] font-bold text-gray-800 mb-1.5">Nombre Categoría</label>
-                    <input type="text" autoFocus placeholder="Ej. Finanzas, Viajes..." value={categoryInput} onChange={(e) => setCategoryInput(e.target.value)} className="w-full bg-[#F2F2F7] border border-transparent rounded-[12px] px-4 py-2.5 text-[14px] font-bold text-gray-900 placeholder-gray-400 focus:bg-white focus:border-[#007AFF] focus:ring-2 focus:ring-[#007AFF]/10 transition-all outline-none shadow-sm uppercase" />
+                    <label className="block text-[13px] font-bold text-gray-800 mb-2">
+                      Nombre de la nueva categoría
+                    </label>
+                    <input
+                      type="text"
+                      autoFocus
+                      placeholder="Ej. Finanzas, Viajes, Mascotas..."
+                      value={categoryInput}
+                      onChange={(e) => setCategoryInput(e.target.value)}
+                      className="w-full bg-[#F2F2F7] border border-transparent rounded-[14px] px-4 py-2.5 text-[14px] font-bold text-gray-900 placeholder-gray-400 focus:bg-white focus:border-[#007AFF] focus:ring-2 focus:ring-[#007AFF]/10 transition-all outline-none shadow-sm uppercase"
+                    />
                   </div>
               )}
 
               {modalMode !== 'category' && (
                 <div className="space-y-4">
                   <div className="relative">
-                    <label className="block text-[12px] font-bold text-gray-800 mb-1.5">Categoría (Opcional)</label>
-                    <input type="text" list="existing-categories" placeholder="Ej. Casa, Trabajo..." value={categoryInput} onChange={(e) => setCategoryInput(e.target.value)} className="w-full bg-[#F2F2F7] border border-transparent rounded-[12px] px-4 py-2 text-[13px] font-bold text-gray-900 placeholder-gray-400 focus:bg-white focus:border-[#007AFF] focus:ring-2 focus:ring-[#007AFF]/10 transition-all outline-none shadow-sm uppercase" />
+                    <label className="block text-[13px] font-bold text-gray-800 mb-2">
+                      Categoría (Opcional)
+                    </label>
+                    <input
+                      type="text"
+                      list="existing-categories"
+                      placeholder="Ej. Casa, Trabajo, Estudio..."
+                      value={categoryInput}
+                      onChange={(e) => setCategoryInput(e.target.value)}
+                      className="w-full bg-[#F2F2F7] border border-transparent rounded-[14px] px-4 py-2.5 text-[14px] font-bold text-gray-900 placeholder-gray-400 focus:bg-white focus:border-[#007AFF] focus:ring-2 focus:ring-[#007AFF]/10 transition-all outline-none shadow-sm uppercase"
+                    />
                     <datalist id="existing-categories">
                         {uniqueCategories.map(c => <option key={c} value={c} />)}
                     </datalist>
                   </div>
 
                   <div>
-                    <label className="block text-[12px] font-bold text-gray-800 mb-1.5">{modalMode === 'bulk' ? 'Tus Metas' : 'Meta'}</label>
+                    <label className="block text-[13px] font-bold text-gray-800 mb-2">
+                      {modalMode === 'bulk' ? '¿Cuáles son tus metas?' : '¿Cuál es tu meta?'}
+                    </label>
                     {modalMode === 'bulk' ? (
                       <div className="space-y-2">
                           {bulkItems.map((item, idx) => (
-                             <div key={idx} className="flex items-center gap-2 bg-[#F2F2F7] rounded-[12px] px-3 py-1 border border-transparent focus-within:border-[#007AFF] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#007AFF]/10 transition-all shadow-sm">
-                                <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center text-gray-400 font-bold text-[9px] shadow-sm flex-shrink-0">{idx + 1}</div>
-                                <input type="text" placeholder={`Añadir meta...`} value={item} onChange={(e) => {
+                             <div key={idx} className="flex items-center gap-2 bg-[#F2F2F7] rounded-[14px] px-3 py-1 border border-transparent focus-within:border-[#007AFF] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#007AFF]/10 transition-all shadow-sm">
+                                <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center text-gray-400 font-bold text-[10px] shadow-sm flex-shrink-0">
+                                   {idx + 1}
+                                </div>
+                                <input
+                                   type="text"
+                                   placeholder={`Añadir meta...`}
+                                   value={item}
+                                   onChange={(e) => {
                                       const newItems = [...bulkItems];
                                       newItems[idx] = e.target.value;
-                                      if (idx === bulkItems.length - 1 && e.target.value.trim() !== '') newItems.push('');
+                                      if (idx === bulkItems.length - 1 && e.target.value.trim() !== '') {
+                                         newItems.push('');
+                                      }
                                       setBulkItems(newItems);
-                                   }} className="w-full bg-transparent py-1.5 text-[14px] font-medium text-gray-900 outline-none" />
+                                   }}
+                                   className="w-full bg-transparent py-1.5 text-[14px] font-medium text-gray-900 outline-none"
+                                />
                                 {bulkItems.length > 1 && idx !== bulkItems.length - 1 && (
-                                   <button type="button" onClick={() => setBulkItems(bulkItems.filter((_, i) => i !== idx))} className="text-gray-300 hover:text-red-500 transition-colors p-1" title="Eliminar fila"><X size={14} strokeWidth={3} /></button>
+                                   <button type="button" onClick={() => setBulkItems(bulkItems.filter((_, i) => i !== idx))} className="text-gray-300 hover:text-red-500 transition-colors p-1" title="Eliminar fila">
+                                      <X size={14} strokeWidth={3} />
+                                   </button>
                                 )}
                              </div>
                           ))}
                       </div>
                     ) : (
-                      <input type="text" autoFocus placeholder="Ej. Leer 15 páginas..." value={newHabitName} onChange={(e) => setNewHabitName(e.target.value)} className="w-full bg-[#F2F2F7] border border-transparent rounded-[12px] px-4 py-2.5 text-[14px] font-medium text-gray-900 placeholder-gray-400 focus:bg-white focus:border-[#007AFF] focus:ring-2 focus:ring-[#007AFF]/10 transition-all outline-none shadow-sm" />
+                      <input
+                        type="text"
+                        autoFocus
+                        placeholder="Ej. Leer 15 páginas..."
+                        value={newHabitName}
+                        onChange={(e) => setNewHabitName(e.target.value)}
+                        className="w-full bg-[#F2F2F7] border border-transparent rounded-[14px] px-4 py-2.5 text-[14px] font-medium text-gray-900 placeholder-gray-400 focus:bg-white focus:border-[#007AFF] focus:ring-2 focus:ring-[#007AFF]/10 transition-all outline-none shadow-sm"
+                      />
                     )}
                   </div>
                   
                   {modalMode === 'single' && (
                      <div>
-                        <label className="block text-[12px] font-bold text-gray-800 mb-1.5">Notas</label>
-                        <textarea placeholder="Detalles (ej. rutina del gimnasio)..." value={newHabitNotes} onChange={(e) => setNewHabitNotes(e.target.value)} rows={2} className="w-full bg-[#F2F2F7] border border-transparent rounded-[12px] px-4 py-2 text-[13px] font-medium text-gray-900 placeholder-gray-400 focus:bg-white focus:border-[#007AFF] focus:ring-2 focus:ring-[#007AFF]/10 transition-all outline-none shadow-sm resize-none leading-relaxed" />
+                        <label className="block text-[13px] font-bold text-gray-800 mb-2">Notas / Detalles</label>
+                        <textarea
+                           placeholder="Añade detalles adicionales..."
+                           value={newHabitNotes}
+                           onChange={(e) => setNewHabitNotes(e.target.value)}
+                           rows={2}
+                           className="w-full bg-[#F2F2F7] border border-transparent rounded-[14px] px-4 py-2.5 text-[13px] md:text-[14px] font-medium text-gray-900 placeholder-gray-400 focus:bg-white focus:border-[#007AFF] focus:ring-2 focus:ring-[#007AFF]/10 transition-all outline-none shadow-sm resize-none leading-relaxed"
+                        />
                      </div>
                   )}
                 </div>
@@ -1948,21 +2404,44 @@ const App = () => {
 
               {!habitToEdit && (
                 <div>
-                  <div className="flex justify-between items-center mb-2">
-                    <label className="text-[12px] font-bold text-gray-800">¿Cuándo?</label>
-                    <div className="flex bg-[#F2F2F7] p-1 rounded-full">
-                      <button type="button" onClick={() => setScheduleMode('single')} className={`px-3 py-1 text-[10px] font-bold rounded-full transition-all duration-300 ${scheduleMode === 'single' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Hoy</button>
-                      <button type="button" onClick={() => setScheduleMode('recurring')} className={`px-3 py-1 text-[10px] font-bold rounded-full transition-all duration-300 ${scheduleMode === 'recurring' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Días</button>
-                      <button type="button" onClick={() => setScheduleMode('range')} className={`px-3 py-1 text-[10px] font-bold rounded-full transition-all duration-300 ${scheduleMode === 'range' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Rango</button>
+                  <div className="flex justify-between items-center mb-2.5">
+                    <label className="text-[13px] font-bold text-gray-800">¿Cuándo?</label>
+                    <div className="flex bg-[#F2F2F7] p-0.5 rounded-full">
+                      <button 
+                        type="button"
+                        onClick={() => setScheduleMode('single')}
+                        className={`px-2.5 py-1 text-[11px] font-bold rounded-full transition-all duration-300 ${scheduleMode === 'single' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                      >
+                        Hoy
+                      </button>
+                      <button 
+                        type="button"
+                        onClick={() => setScheduleMode('recurring')}
+                        className={`px-2.5 py-1 text-[11px] font-bold rounded-full transition-all duration-300 ${scheduleMode === 'recurring' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                      >
+                        Días
+                      </button>
+                      <button 
+                        type="button"
+                        onClick={() => setScheduleMode('range')}
+                        className={`px-2.5 py-1 text-[11px] font-bold rounded-full transition-all duration-300 ${scheduleMode === 'range' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                      >
+                        Rango
+                      </button>
                     </div>
                   </div>
 
                   {scheduleMode === 'recurring' && (
-                     <div className="bg-[#F2F2F7] p-3 rounded-[16px]">
-                        <p className="text-[11px] text-gray-500 font-medium mb-2">Repetir por 8 semanas los días:</p>
+                     <div className="bg-[#F2F2F7] p-3 md:p-4 rounded-[16px]">
+                        <p className="text-[11px] text-gray-500 font-medium mb-2.5">Selecciona los días para programar durante las próximas 8 semanas:</p>
                         <div className="flex justify-between gap-1">
                            {DAYS_OF_WEEK.map(day => (
-                               <button key={day.id} type="button" onClick={() => toggleRecurringDay(day.id)} className={`w-8 h-8 md:w-9 md:h-9 rounded-full font-bold text-[12px] transition-all shadow-sm ${recurringDays.includes(day.id) ? 'bg-[#007AFF] text-white scale-105' : 'bg-white text-gray-400 border border-gray-200'}`}>
+                               <button
+                                  key={day.id}
+                                  type="button"
+                                  onClick={() => toggleRecurringDay(day.id)}
+                                  className={`w-8 h-8 md:w-9 md:h-9 rounded-full font-bold text-[12px] md:text-[13px] transition-all shadow-sm ${recurringDays.includes(day.id) ? 'bg-[#007AFF] text-white scale-110' : 'bg-white text-gray-400 border border-gray-200'}`}
+                               >
                                   {day.label}
                                </button>
                            ))}
@@ -1973,18 +2452,34 @@ const App = () => {
                   {scheduleMode !== 'recurring' && (
                     <div className="flex gap-3 items-center bg-[#F2F2F7] p-2.5 rounded-[16px]">
                       <div className="flex-1">
-                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest ml-2 mb-1">Inicio</p>
-                        <label className="relative block w-full bg-white rounded-[10px] border border-black/5 focus-within:border-[#007AFF] shadow-sm transition-colors cursor-pointer">
-                          <input type="date" value={selectedDateStr} onChange={(e) => { if (e.target.value) { setSelectedDateStr(e.target.value); if (e.target.value > rangeEndDate) setRangeEndDate(e.target.value); } }} className="w-full h-full px-3 py-2 text-[13px] font-medium outline-none bg-transparent cursor-pointer" />
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1 mb-1">Inicio</p>
+                        <label className="relative block w-full bg-white rounded-[12px] border border-black/5 focus-within:border-[#007AFF] shadow-sm transition-colors cursor-pointer">
+                          <input 
+                            type="date" 
+                            value={selectedDateStr}
+                            onChange={(e) => {
+                              if (e.target.value) {
+                                setSelectedDateStr(e.target.value);
+                                if (e.target.value > rangeEndDate) setRangeEndDate(e.target.value);
+                              }
+                            }}
+                            className="w-full h-full px-3 py-2 text-[13px] md:text-[14px] font-medium outline-none bg-transparent cursor-pointer"
+                          />
                         </label>
                       </div>
                       {scheduleMode === 'range' && (
                         <>
-                          <ArrowRight size={14} className="text-gray-400 flex-shrink-0 mt-4" />
+                          <ArrowRight size={16} className="text-gray-400 flex-shrink-0 mt-4" />
                           <div className="flex-1">
-                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest ml-2 mb-1">Fin</p>
-                            <label className="relative block w-full bg-white rounded-[10px] border border-black/5 focus-within:border-[#007AFF] shadow-sm transition-colors cursor-pointer">
-                              <input type="date" min={selectedDateStr} value={rangeEndDate} onChange={(e) => { if(e.target.value) setRangeEndDate(e.target.value); }} className="w-full h-full px-3 py-2 text-[13px] font-medium outline-none bg-transparent cursor-pointer" />
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1 mb-1">Fin</p>
+                            <label className="relative block w-full bg-white rounded-[12px] border border-black/5 focus-within:border-[#007AFF] shadow-sm transition-colors cursor-pointer">
+                              <input 
+                                type="date" 
+                                min={selectedDateStr}
+                                value={rangeEndDate}
+                                onChange={(e) => { if(e.target.value) setRangeEndDate(e.target.value); }}
+                                className="w-full h-full px-3 py-2 text-[13px] md:text-[14px] font-medium outline-none bg-transparent cursor-pointer"
+                              />
                             </label>
                           </div>
                         </>
@@ -1995,28 +2490,48 @@ const App = () => {
               )}
 
               {modalMode !== 'category' && uniqueCategories.includes(categoryInput.trim()) ? (
-                 <div className="bg-blue-50 text-[#007AFF] p-4 rounded-[16px] flex items-center gap-3 text-[12px] font-medium border border-blue-100">
+                 <div className="bg-blue-50 text-[#007AFF] p-3.5 rounded-[16px] flex items-center gap-3 text-[13px] font-medium border border-blue-100">
                     <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm flex-shrink-0">
-                       <FolderIcon size={14} strokeWidth={2.5} />
+                       <FolderIcon size={16} strokeWidth={2.5} />
                     </div>
-                    <p className="leading-snug">Heredará estilo de <b>"{categoryInput.trim()}"</b>.</p>
+                    <p className="leading-snug">
+                       Esta meta heredará automáticamente el estilo de la categoría <b>"{categoryInput.trim()}"</b>.
+                    </p>
                  </div>
               ) : (
                 <>
                   <div>
-                    <label className="block text-[12px] font-bold text-gray-800 mb-2">Icono</label>
-                    <div className="flex gap-2 overflow-x-auto pb-2 mb-2 snap-x category-scrollbar">
+                    <label className="block text-[13px] font-bold text-gray-800 mb-2">Icono y Categoría</label>
+                    
+                    <div className="flex gap-2 overflow-x-auto pb-2 mb-1.5 snap-x category-scrollbar">
                       {Object.keys(ICON_CATEGORIES).map(cat => (
-                        <button key={cat} type="button" onClick={() => setSelectedIconCategory(cat)} className={`flex-shrink-0 snap-start px-3 py-1 text-[11px] font-bold rounded-full transition-all duration-300 border ${selectedIconCategory === cat ? 'bg-black text-white border-black shadow-sm' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300'}`}>
+                        <button
+                          key={cat}
+                          type="button"
+                          onClick={() => setSelectedIconCategory(cat)}
+                          className={`flex-shrink-0 snap-start px-2.5 py-1 text-[11px] font-bold rounded-full transition-all duration-300 border ${
+                            selectedIconCategory === cat 
+                              ? 'bg-black text-white border-black shadow-sm' 
+                              : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                          }`}
+                        >
                           {cat}
                         </button>
                       ))}
                     </div>
+
                     <div className="grid grid-cols-7 sm:grid-cols-9 gap-2 p-2.5 bg-[#F2F2F7] rounded-[16px]">
                       {Object.keys(ICON_CATEGORIES[selectedIconCategory]).map((iconName) => {
                         const IconComp = ICON_CATEGORIES[selectedIconCategory][iconName];
                         return (
-                          <button key={iconName} type="button" onClick={() => setSelectedIcon(iconName)} className={`w-8 h-8 rounded-[10px] flex items-center justify-center transition-all duration-200 mx-auto ${selectedIcon === iconName ? `bg-black text-white shadow-md scale-110` : 'bg-transparent text-gray-500 hover:bg-gray-200'}`}>
+                          <button
+                            key={iconName}
+                            type="button"
+                            onClick={() => setSelectedIcon(iconName)}
+                            className={`w-8 h-8 md:w-9 md:h-9 rounded-[10px] flex items-center justify-center transition-all duration-200 mx-auto ${
+                              selectedIcon === iconName ? `bg-black text-white shadow-md scale-110` : 'bg-transparent text-gray-500 hover:bg-gray-200'
+                            }`}
+                          >
                             <IconComp size={16} strokeWidth={2.5} />
                           </button>
                         );
@@ -2025,19 +2540,37 @@ const App = () => {
                   </div>
 
                   <div>
-                    <label className="flex items-center gap-1.5 text-[12px] font-bold text-gray-800 mb-2">
-                      <Palette size={14} /> Color
+                    <label className="flex items-center gap-1.5 text-[13px] font-bold text-gray-800 mb-2">
+                      <Palette size={14} /> Color Personalizado
                     </label>
-                    <div className="flex flex-wrap gap-2 p-1.5 overflow-visible">
+                    <div className="flex flex-wrap gap-2.5 p-1.5 overflow-visible">
                       {HABIT_COLORS.map((color) => (
-                        <button key={color} type="button" onClick={() => setSelectedColor(color)} className={`flex-shrink-0 w-6 h-6 rounded-full ${color} transition-all duration-200 relative ${selectedColor === color ? 'scale-110 shadow-md border-[1.5px] border-white ring-2 ring-black z-10' : 'opacity-80 hover:opacity-100 hover:scale-105 border-2 border-transparent'}`} />
+                        <button
+                          key={color}
+                          type="button"
+                          onClick={() => setSelectedColor(color)}
+                          className={`flex-shrink-0 w-6 h-6 md:w-7 md:h-7 rounded-full ${color} transition-all duration-200 relative ${
+                            selectedColor === color 
+                              ? 'scale-110 shadow-md border-2 border-white ring-[2px] ring-black z-10' 
+                              : 'opacity-80 hover:opacity-100 hover:scale-105 border-2 border-transparent'
+                          }`}
+                        />
                       ))}
                     </div>
                   </div>
                 </>
               )}
 
-              <button type="submit" disabled={(modalMode === 'category' ? !categoryInput.trim() : (modalMode === 'bulk' ? !bulkItems.some(s => s.trim().length > 0) : !newHabitName.trim())) || (scheduleMode === 'range' && selectedDateStr > rangeEndDate) || (scheduleMode === 'recurring' && recurringDays.length === 0)} className="w-full bg-[#007AFF] text-white rounded-[16px] py-3 font-bold text-[14px] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 mt-1">
+              <button
+                type="submit"
+                disabled={
+                   (modalMode === 'category' ? !categoryInput.trim() :
+                   (modalMode === 'bulk' ? !bulkItems.some(s => s.trim().length > 0) : !newHabitName.trim())) 
+                   || (scheduleMode === 'range' && selectedDateStr > rangeEndDate)
+                   || (scheduleMode === 'recurring' && recurringDays.length === 0)
+                }
+                className="w-full bg-[#007AFF] text-white rounded-[16px] py-3 font-bold text-[14px] md:text-[15px] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none mt-1"
+              >
                 {habitToEdit ? 'Guardar Cambios' : (modalMode === 'category' ? 'Crear Categoría' : 'Añadir Metas')}
               </button>
             </form>
@@ -2045,144 +2578,266 @@ const App = () => {
         </div>
       )}
 
-      {/* Modal Ajustes y Perfil fusionados (Reutilizando estructura base) */}
+      {/* Modal Perfil de Usuario */}
+      {isProfileModalOpen && userProfile && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center md:items-center">
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-md transition-opacity duration-300" onClick={() => setIsProfileModalOpen(false)}></div>
+          <div className="bg-white w-full max-w-md md:max-w-lg rounded-t-[36px] md:rounded-[36px] p-6 md:p-10 z-10 animate-in slide-in-from-bottom-8 md:slide-in-from-bottom-0 md:zoom-in-95 shadow-xl relative overflow-hidden max-h-[90vh] overflow-y-auto category-scrollbar">
+            <div className="w-14 h-1.5 bg-gray-200 rounded-full mx-auto mb-8 md:hidden"></div>
+            <button onClick={() => setIsProfileModalOpen(false)} className="absolute top-6 right-6 w-10 h-10 bg-[#F2F2F7] rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-200 hover:text-gray-800 transition-colors">
+                <X size={20} strokeWidth={2.5} />
+            </button>
+
+            <div className="flex flex-col items-center mb-8">
+                <div className="w-24 h-24 bg-[#007AFF] rounded-[32px] text-white flex items-center justify-center text-[36px] font-extrabold shadow-sm mb-5">
+                    {userProfile.firstName.charAt(0)}{userProfile.lastName.charAt(0)}
+                </div>
+                <h2 className="text-[28px] font-extrabold text-gray-900 tracking-tight leading-none mb-2">{userProfile.firstName} {userProfile.lastName}</h2>
+                <div className="flex items-center gap-2 text-[#007AFF] bg-[#007AFF]/10 px-4 py-1.5 rounded-full font-bold text-[14px]">
+                   <Crown size={16} strokeWidth={2.5} />
+                   Nivel {levelInfo.level} • {levelInfo.rank}
+                </div>
+            </div>
+
+            <div className="bg-[#F2F2F7] rounded-[28px] p-6 mb-8 border border-black/[0.02]">
+                <div className="flex justify-between items-end mb-3">
+                   <span className="text-[14px] font-bold text-gray-500 tracking-wide">Experiencia (XP)</span>
+                   <span className="text-[18px] font-extrabold text-gray-900">{levelInfo.currentLevelXp} <span className="text-[14px] text-gray-400 font-bold">/ {levelInfo.xpForNextLevel}</span></span>
+                </div>
+                <div className="h-3 bg-gray-200/80 rounded-full overflow-hidden shadow-inner mb-4">
+                   <div className="h-full bg-[#007AFF] rounded-full transition-all duration-1000 ease-out" style={{ width: `${levelInfo.progress}%` }}></div>
+                </div>
+                <p className="text-center text-[13px] text-gray-500 font-medium">
+                   Te faltan <span className="font-bold text-gray-800">{levelInfo.xpForNextLevel - levelInfo.currentLevelXp} XP</span> para alcanzar el Nivel {levelInfo.level + 1}.
+                </p>
+                <button onClick={() => setIsXpHistoryOpen(true)} className="w-full mt-5 bg-white shadow-sm border border-black/5 hover:bg-gray-50 text-gray-800 font-bold py-3 rounded-[20px] transition-colors active:scale-95 text-[14px]">
+                   Ver Registro de Experiencia
+                </button>
+            </div>
+
+            <div className="mb-8">
+                <h3 className="text-[16px] font-bold text-gray-900 mb-4 px-1 flex items-center gap-2">
+                   <Award size={18} className="text-yellow-500" /> Estadísticas y Logros
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                   <div className="bg-orange-50 rounded-[24px] p-4 flex flex-col items-center justify-center text-center border border-orange-100/50">
+                      <Trophy size={24} className="text-orange-500 mb-2" strokeWidth={2} />
+                      <span className="text-[20px] font-extrabold text-orange-600 leading-none mb-1">
+                          {Object.keys(userProfile.bonuses || {}).length}
+                      </span>
+                      <span className="text-[11px] font-bold text-orange-600/70 uppercase tracking-widest text-center">Días Perfectos</span>
+                   </div>
+                   <div className="bg-purple-50 rounded-[24px] p-4 flex flex-col items-center justify-center text-center border border-purple-100/50">
+                      <Medal size={24} className="text-purple-500 mb-2" strokeWidth={2} />
+                      <span className="text-[20px] font-extrabold text-purple-600 leading-none mb-1">{totalCompletedGoals}</span>
+                      <span className="text-[11px] font-bold text-purple-600/70 uppercase tracking-widest">Metas Totales</span>
+                   </div>
+                   <div className="bg-blue-50 rounded-[24px] p-4 flex flex-col items-center justify-center text-center border border-blue-100/50">
+                      <Zap size={24} className="text-[#007AFF] mb-2" strokeWidth={2} />
+                      <span className="text-[20px] font-extrabold text-[#007AFF] leading-none mb-1">{activeStreakGlobal}</span>
+                      <span className="text-[11px] font-bold text-[#007AFF]/70 uppercase tracking-widest">Racha Activa</span>
+                   </div>
+                   <div className="bg-red-50 rounded-[24px] p-4 flex flex-col items-center justify-center text-center border border-red-100/50">
+                      <FlameIcon size={24} className="text-red-500 mb-2" strokeWidth={2} />
+                      <span className="text-[20px] font-extrabold text-red-600 leading-none mb-1">{bestStreakGlobal}</span>
+                      <span className="text-[11px] font-bold text-red-600/70 uppercase tracking-widest">Mejor Racha</span>
+                   </div>
+                </div>
+            </div>
+
+            {/* Actividad / Heatmap */}
+            <div>
+               <h3 className="text-[16px] font-bold text-gray-900 mb-4 px-1 flex items-center gap-2">
+                  <Activity size={18} className="text-green-500" /> Actividad Reciente (28 Días)
+               </h3>
+               <div className="bg-white border border-gray-100 shadow-sm p-5 rounded-[28px]">
+                   <div className="grid grid-cols-7 gap-2 gap-y-3">
+                       {heatmapData.map((data, index) => {
+                           let bgClass = "bg-gray-100";
+                           if (data.percent === 100) bgClass = "bg-green-500";
+                           else if (data.percent >= 66) bgClass = "bg-green-400";
+                           else if (data.percent >= 33) bgClass = "bg-green-300";
+                           else if (data.percent > 0) bgClass = "bg-green-200";
+
+                           return (
+                               <div key={index} className="flex flex-col items-center gap-1.5 group relative">
+                                   <div className={`w-full aspect-square rounded-[8px] transition-colors duration-300 ${bgClass}`} title={`${data.date}: ${data.percent}% completado`} />
+                               </div>
+                           );
+                       })}
+                   </div>
+                   <div className="flex justify-between items-center mt-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">
+                      <span>Hace 4 Semanas</span>
+                      <span>Hoy</span>
+                   </div>
+               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Ajustes */}
       {isSettingsOpen && (
         <div className="fixed inset-0 z-50 flex items-end justify-center md:items-center">
           <div className="fixed inset-0 bg-black/40 backdrop-blur-md transition-opacity duration-300" onClick={() => setIsSettingsOpen(false)}></div>
-          <div className="bg-white w-full max-w-md lg:max-w-lg rounded-t-[28px] md:rounded-[28px] p-5 md:p-6 pt-4 z-10 animate-in slide-in-from-bottom-8 md:slide-in-from-bottom-0 md:zoom-in-95 shadow-xl">
-            <div className="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-5 md:hidden"></div>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-[20px] md:text-[22px] font-extrabold tracking-tight text-gray-900">Ajustes</h2>
-              <button onClick={() => setIsSettingsOpen(false)} className="w-8 h-8 bg-[#F2F2F7] rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-200 hover:text-gray-800 transition-colors">
-                <X size={18} strokeWidth={2.5} />
+          <div className="bg-white w-full max-w-md md:max-w-xl rounded-t-[36px] md:rounded-[36px] p-6 md:p-8 pt-4 md:pt-6 z-10 animate-in slide-in-from-bottom-8 md:slide-in-from-bottom-0 md:zoom-in-95 shadow-xl">
+            <div className="w-14 h-1.5 bg-gray-200 rounded-full mx-auto mb-6 md:hidden"></div>
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-[26px] font-extrabold tracking-tight text-gray-900">Ajustes</h2>
+              <button onClick={() => setIsSettingsOpen(false)} className="w-10 h-10 bg-[#F2F2F7] rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-200 hover:text-gray-800 transition-colors">
+                <X size={20} strokeWidth={2.5} />
               </button>
             </div>
 
-            <div className="space-y-6 mb-2 category-scrollbar overflow-y-auto max-h-[70vh] pr-1">
+            <div className="space-y-8 mb-4 category-scrollbar overflow-y-auto max-h-[70vh] pr-2">
+              
               <div>
-                <h3 className="text-[12px] font-bold text-gray-400 uppercase tracking-wider mb-3 ml-1">App & Tutorial</h3>
-                <div className="bg-[#F2F2F7] rounded-[20px] p-2 border border-black/[0.02]">
-                  <button onClick={openTutorialFromSettings} className="w-full flex items-center gap-3 p-3 rounded-[16px] hover:bg-white transition-all duration-300 shadow-sm hover:shadow-md text-left group">
-                    <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-[#007AFF] group-hover:scale-105 transition-transform duration-300">
-                      <Target size={18} />
+                <h3 className="text-[14px] font-bold text-gray-400 uppercase tracking-wider mb-4 ml-2">App & Tutorial</h3>
+                <div className="bg-[#F2F2F7] rounded-[28px] p-3 border border-black/[0.02]">
+                  <button onClick={openTutorialFromSettings} className="w-full flex items-center gap-4 p-4 rounded-[20px] hover:bg-white transition-all duration-300 shadow-sm hover:shadow-md text-left group">
+                    <div className="w-12 h-12 bg-white rounded-2xl shadow-sm flex items-center justify-center text-[#007AFF] group-hover:scale-105 transition-transform duration-300">
+                      <Target size={22} />
                     </div>
                     <div>
-                      <p className="font-bold text-[14px] text-gray-900 tracking-tight">Ver Tutorial Inicial</p>
-                      <p className="text-[12px] text-gray-500 font-medium">Aprende a usar la app e instalarla</p>
+                      <p className="font-bold text-[16px] text-gray-900 tracking-tight">Ver Tutorial Inicial</p>
+                      <p className="text-[14px] text-gray-500 font-medium">Aprende a usar la app e instalarla</p>
                     </div>
                   </button>
-                  <div className="h-px bg-gray-200/80 my-1 mx-4"></div>
-                  <button onClick={() => setSoundEnabled(!soundEnabled)} className="w-full flex items-center justify-between p-3 rounded-[16px] hover:bg-white transition-all duration-300 shadow-sm hover:shadow-md text-left group">
-                    <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-xl shadow-sm flex items-center justify-center transition-transform duration-300 group-hover:scale-105 ${soundEnabled ? 'bg-white text-purple-500' : 'bg-gray-200 text-gray-400'}`}>
-                          {soundEnabled ? <Volume2 size={18} /> : <VolumeX size={18} />}
+                  <div className="h-px bg-gray-200/80 my-2 mx-5"></div>
+                  <button onClick={() => setSoundEnabled(!soundEnabled)} className="w-full flex items-center justify-between p-4 rounded-[20px] hover:bg-white transition-all duration-300 shadow-sm hover:shadow-md text-left group">
+                    <div className="flex items-center gap-4">
+                        <div className={`w-12 h-12 rounded-2xl shadow-sm flex items-center justify-center transition-transform duration-300 group-hover:scale-105 ${soundEnabled ? 'bg-white text-purple-500' : 'bg-gray-200 text-gray-400'}`}>
+                          {soundEnabled ? <Volume2 size={22} /> : <VolumeX size={22} />}
                         </div>
                         <div>
-                          <p className="font-bold text-[14px] text-gray-900 tracking-tight">Efectos de Sonido</p>
-                          <p className="text-[12px] text-gray-500 font-medium">{soundEnabled ? 'Activados' : 'Desactivados'}</p>
+                          <p className="font-bold text-[16px] text-gray-900 tracking-tight">Efectos de Sonido</p>
+                          <p className="text-[14px] text-gray-500 font-medium">{soundEnabled ? 'Activados' : 'Desactivados'}</p>
                         </div>
                     </div>
-                    <div className={`w-10 h-6 rounded-full transition-colors flex items-center px-1 ${soundEnabled ? 'bg-[#34C759]' : 'bg-gray-300'}`}>
-                        <div className={`w-4 h-4 bg-white rounded-full transition-transform shadow-sm ${soundEnabled ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                    <div className={`w-12 h-7 rounded-full transition-colors flex items-center px-1 ${soundEnabled ? 'bg-[#34C759]' : 'bg-gray-300'}`}>
+                        <div className={`w-5 h-5 bg-white rounded-full transition-transform shadow-sm ${soundEnabled ? 'translate-x-5' : 'translate-x-0'}`}></div>
                     </div>
                   </button>
                 </div>
               </div>
 
               <div>
-                <h3 className="text-[12px] font-bold text-gray-400 uppercase tracking-wider mb-3 ml-1">Notificaciones</h3>
-                <div className="bg-[#F2F2F7] rounded-[20px] p-4 border border-black/[0.02]">
+                <h3 className="text-[14px] font-bold text-gray-400 uppercase tracking-wider mb-4 ml-2">Notificaciones</h3>
+                <div className="bg-[#F2F2F7] rounded-[28px] p-5 border border-black/[0.02]">
                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                         <div className={`w-10 h-10 rounded-xl shadow-sm flex items-center justify-center transition-colors ${notificationsEnabled ? 'bg-[#007AFF] text-white' : 'bg-white text-gray-400'}`}>
-                            <Bell size={18} />
+                      <div className="flex items-center gap-4">
+                         <div className={`w-12 h-12 rounded-2xl shadow-sm flex items-center justify-center transition-colors ${notificationsEnabled ? 'bg-[#007AFF] text-white' : 'bg-white text-gray-400'}`}>
+                            <Bell size={22} />
                          </div>
                          <div>
-                            <p className="font-bold text-[14px] text-gray-900 tracking-tight">Recordatorio Diario</p>
-                            <p className="text-[11px] text-gray-500 font-medium leading-tight mt-0.5">Aviso a las 20:00 si tienes metas pendientes.</p>
+                            <p className="font-bold text-[16px] text-gray-900 tracking-tight">Recordatorio Diario</p>
+                            <p className="text-[13px] text-gray-500 font-medium leading-tight mt-0.5">Recibe un aviso a las 20:00 si tienes metas pendientes.</p>
                          </div>
                       </div>
-                      {!notificationsEnabled && <button onClick={requestNotificationPermission} className="text-[11px] font-bold text-[#007AFF] bg-[#007AFF]/10 px-3 py-1.5 rounded-full active:scale-95 ml-2">Activar</button>}
-                      {notificationsEnabled && <span className="text-[11px] font-bold text-green-600 bg-green-100 px-3 py-1.5 rounded-full ml-2">Activo</span>}
+                      {!notificationsEnabled && (
+                         <button onClick={requestNotificationPermission} className="text-[13px] font-bold text-[#007AFF] bg-[#007AFF]/10 px-4 py-2 rounded-full active:scale-95 ml-2">Activar</button>
+                      )}
+                      {notificationsEnabled && (
+                         <span className="text-[13px] font-bold text-green-600 bg-green-100 px-4 py-2 rounded-full ml-2">Activo</span>
+                      )}
                    </div>
                 </div>
               </div>
 
               <div>
-                <h3 className="text-[12px] font-bold text-gray-400 uppercase tracking-wider mb-3 ml-1">Respaldo y Sistema</h3>
-                <div className="bg-[#F2F2F7] rounded-[20px] p-2 border border-black/[0.02]">
-                  <button onClick={exportData} className="w-full flex items-center gap-3 p-3 rounded-[16px] hover:bg-white transition-all duration-300 shadow-sm hover:shadow-md text-left group">
-                    <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-[#007AFF] group-hover:scale-105 transition-transform duration-300">
-                      <Download size={18} />
+                <h3 className="text-[14px] font-bold text-gray-400 uppercase tracking-wider mb-4 ml-2">Datos y Respaldo</h3>
+                <div className="bg-[#F2F2F7] rounded-[28px] p-3 border border-black/[0.02]">
+                  <button onClick={exportData} className="w-full flex items-center gap-4 p-4 rounded-[20px] hover:bg-white transition-all duration-300 shadow-sm hover:shadow-md text-left group">
+                    <div className="w-12 h-12 bg-white rounded-2xl shadow-sm flex items-center justify-center text-[#007AFF] group-hover:scale-105 transition-transform duration-300">
+                      <Download size={22} />
                     </div>
                     <div>
-                      <p className="font-bold text-[14px] text-gray-900 tracking-tight">Exportar Respaldo</p>
-                      <p className="text-[12px] text-gray-500 font-medium">Descarga un archivo .json</p>
+                      <p className="font-bold text-[16px] text-gray-900 tracking-tight">Exportar Respaldo</p>
+                      <p className="text-[14px] text-gray-500 font-medium">Descarga un archivo .json</p>
                     </div>
                   </button>
-                  <div className="h-px bg-gray-200/80 my-1 mx-4"></div>
-                  <button onClick={() => fileInputRef.current?.click()} className="w-full flex items-center gap-3 p-3 rounded-[16px] hover:bg-white transition-all duration-300 shadow-sm hover:shadow-md text-left group">
-                    <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-orange-500 group-hover:scale-105 transition-transform duration-300">
-                      <Upload size={18} />
+                  <div className="h-px bg-gray-200/80 my-2 mx-5"></div>
+                  <button onClick={() => fileInputRef.current?.click()} className="w-full flex items-center gap-4 p-4 rounded-[20px] hover:bg-white transition-all duration-300 shadow-sm hover:shadow-md text-left group">
+                    <div className="w-12 h-12 bg-white rounded-2xl shadow-sm flex items-center justify-center text-orange-500 group-hover:scale-105 transition-transform duration-300">
+                      <Upload size={22} />
                     </div>
                     <div>
-                      <p className="font-bold text-[14px] text-gray-900 tracking-tight">Restaurar Datos</p>
-                      <p className="text-[12px] text-gray-500 font-medium">Sube un respaldo previo</p>
+                      <p className="font-bold text-[16px] text-gray-900 tracking-tight">Restaurar Datos</p>
+                      <p className="text-[14px] text-gray-500 font-medium">Sube un respaldo previo</p>
                     </div>
                   </button>
                   <input type="file" accept=".json" className="hidden" ref={fileInputRef} onChange={importData} />
-                  <div className="h-px bg-gray-200/80 my-1 mx-4"></div>
-                  <button onClick={clearAppCache} className="w-full flex items-center gap-3 p-3 rounded-[16px] hover:bg-white transition-all duration-300 shadow-sm hover:shadow-md text-left group">
-                     <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-gray-600 group-hover:scale-105 transition-transform duration-300">
-                       <RotateCcw size={18} />
-                     </div>
-                     <div>
-                       <p className="font-bold text-[14px] text-gray-900 tracking-tight">Limpiar Caché</p>
-                       <p className="text-[12px] text-gray-500 font-medium">Libera espacio local y recarga</p>
-                     </div>
-                  </button>
                 </div>
               </div>
 
               <div>
-                <h3 className="text-[12px] font-bold text-gray-400 uppercase tracking-wider mb-3 ml-1">Cuenta Segura</h3>
-                <div className="bg-[#F2F2F7] rounded-[20px] p-4 border border-black/[0.02] flex flex-col gap-3">
+                <h3 className="text-[14px] font-bold text-gray-400 uppercase tracking-wider mb-4 ml-2">Rendimiento</h3>
+                <div className="bg-[#F2F2F7] rounded-[28px] p-3 border border-black/[0.02]">
+                   <button onClick={clearAppCache} className="w-full flex items-center gap-4 p-4 rounded-[20px] hover:bg-white transition-all duration-300 shadow-sm hover:shadow-md text-left group">
+                     <div className="w-12 h-12 bg-white rounded-2xl shadow-sm flex items-center justify-center text-gray-600 group-hover:scale-105 transition-transform duration-300">
+                       <RotateCcw size={22} />
+                     </div>
+                     <div>
+                       <p className="font-bold text-[16px] text-gray-900 tracking-tight">Limpiar Caché</p>
+                       <p className="text-[14px] text-gray-500 font-medium">Libera espacio local y recarga</p>
+                     </div>
+                   </button>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-[14px] font-bold text-gray-400 uppercase tracking-wider mb-4 ml-2">Cuenta Segura</h3>
+                <div className="bg-[#F2F2F7] rounded-[28px] p-5 border border-black/[0.02] flex flex-col gap-4">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-4">
                       {user?.photoURL ? (
-                        <img src={user.photoURL} alt="Perfil" className="w-10 h-10 rounded-full shadow-sm object-cover" />
+                        <img src={user.photoURL} alt="Perfil" className="w-14 h-14 rounded-full shadow-sm object-cover" />
                       ) : (
-                        <div className="w-10 h-10 bg-black rounded-full flex items-center justify-center text-white font-bold text-[16px] shadow-sm">
+                        <div className="w-14 h-14 bg-black rounded-full flex items-center justify-center text-white font-bold text-[20px] shadow-sm">
                           {userProfile?.firstName ? userProfile.firstName.charAt(0).toUpperCase() : (user?.isAnonymous ? 'I' : 'U')}
                         </div>
                       )}
                       <div>
-                        <p className="font-bold text-[14px] text-gray-900 tracking-tight">
+                        <p className="font-bold text-[17px] text-gray-900 tracking-tight">
                           {userProfile?.firstName ? `${userProfile.firstName} ${userProfile.lastName}` : (user?.isAnonymous ? 'Usuario Invitado' : 'Usuario')}
                         </p>
-                        <p className="text-[11px] text-green-600 font-bold flex items-center gap-1 mt-0.5">
-                          <Cloud size={12} /> Activa y cifrada
+                        <p className="text-[14px] text-green-600 font-bold flex items-center gap-1.5 mt-0.5">
+                          <Cloud size={16} /> Activa y cifrada
                         </p>
                       </div>
                     </div>
                   </div>
                   
-                  <div className="h-px bg-gray-200/80 my-0.5 mx-1"></div>
+                  <div className="h-px bg-gray-200/80 my-1 mx-2"></div>
                   
                   <div className="flex flex-col gap-2">
-                    <button onClick={() => setIsTrashOpen(true)} className="w-full flex items-center justify-center gap-2 text-[13px] font-bold text-gray-700 hover:text-gray-900 bg-white shadow-sm border border-gray-200 hover:bg-gray-50 px-3 py-2.5 rounded-[14px] transition-colors active:scale-95">
-                      <Trash size={16} /> Papelera de Reciclaje
+                    <button 
+                      onClick={() => setIsTrashOpen(true)}
+                      className="w-full flex items-center justify-center gap-2 text-[14px] font-bold text-gray-700 hover:text-gray-900 bg-white shadow-sm border border-gray-200 hover:bg-gray-50 px-4 py-3.5 rounded-[18px] transition-colors active:scale-95"
+                    >
+                      <Trash size={18} /> Papelera de Reciclaje
                     </button>
+
                     {user?.isAnonymous && (
-                      <button onClick={linkGoogleAccount} className="w-full flex items-center justify-center gap-2 text-[13px] font-bold text-gray-700 hover:text-gray-900 bg-white shadow-sm border border-gray-200 hover:bg-gray-50 px-3 py-2.5 rounded-[14px] transition-colors active:scale-95">
-                        <Link size={16} /> Vincular con Google
+                      <button 
+                        onClick={linkGoogleAccount}
+                        className="w-full flex items-center justify-center gap-2 text-[14px] font-bold text-gray-700 hover:text-gray-900 bg-white shadow-sm border border-gray-200 hover:bg-gray-50 px-4 py-3.5 rounded-[18px] transition-colors active:scale-95"
+                      >
+                        <Link size={18} /> Vincular con Google
                       </button>
                     )}
-                    <button onClick={() => auth.signOut()} className="w-full flex items-center justify-center gap-2 text-[13px] font-bold text-gray-700 hover:text-gray-900 bg-white shadow-sm border border-gray-200 hover:bg-gray-50 px-3 py-2.5 rounded-[14px] transition-colors active:scale-95">
-                      <LogOut size={16} /> Cerrar Sesión
+                    <button 
+                      onClick={() => auth.signOut()}
+                      className="w-full flex items-center justify-center gap-2 text-[14px] font-bold text-gray-700 hover:text-gray-900 bg-white shadow-sm border border-gray-200 hover:bg-gray-50 px-4 py-3.5 rounded-[18px] transition-colors active:scale-95"
+                    >
+                      <LogOut size={18} /> Cerrar Sesión
                     </button>
-                    <button onClick={deleteAccount} disabled={isDeletingAccount} className="w-full flex items-center justify-center gap-2 text-[13px] font-bold text-red-500 hover:text-red-600 bg-red-50 hover:bg-red-100 px-3 py-2.5 rounded-[14px] transition-colors active:scale-95 disabled:opacity-50">
-                      <Trash2 size={16} /> {isDeletingAccount ? 'Eliminando...' : 'Eliminar Cuenta'}
+                    <button 
+                      onClick={deleteAccount}
+                      disabled={isDeletingAccount}
+                      className="w-full flex items-center justify-center gap-2 text-[14px] font-bold text-red-500 hover:text-red-600 bg-red-50 hover:bg-red-100 px-4 py-3.5 rounded-[18px] transition-colors active:scale-95 disabled:opacity-50"
+                    >
+                      <Trash2 size={18} /> {isDeletingAccount ? 'Eliminando...' : 'Eliminar Cuenta'}
                     </button>
                   </div>
                 </div>
