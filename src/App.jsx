@@ -5,7 +5,7 @@ import {
   ChevronLeft, ChevronRight, BarChart2, GripVertical, MinusCircle,
   CheckCircle2, TrendingUp, ChevronUp, ChevronDown, Pencil, RotateCcw,
   User, Trophy, Medal, Award, Crown, Star, Link, Trash2, LogOut, Bell, Trash, Smartphone, Folder,
-  Volume2, VolumeX, Pin, AlignLeft, Filter, Repeat, Activity,
+  Volume2, VolumeX, Pin, AlignLeft, Filter, Repeat, Activity, Copy,
   
   // Iconos - Productividad
   Target, Zap, Briefcase, CalendarClock, ListTodo, Focus, CheckSquare, ClipboardList, Clock, BarChart, TrendingUp as TrendingUpIcon, Flag, Lightbulb, Puzzle, Rocket, PlayCircle,
@@ -223,7 +223,7 @@ const ConfettiOverlay = () => {
 };
 
 // --- COMPONENTE TARJETA DE CATEGORÍA (PILA) ---
-const CategoryCard = ({ group, habitStreaks, isPendingMode, isEditing, onToggle, onDelete, onEdit, onMoveToToday, onMove, onDragStart, onDragEnd, onDragOver, onDrop, onDeleteGroup, onAddInsideCategory, onEditGroup, onTogglePin, isPinned }) => {
+const CategoryCard = ({ group, habitStreaks, categoryStreak, isPendingMode, isEditing, onToggle, onDelete, onEdit, onMoveToToday, onMove, onDragStart, onDragEnd, onDragOver, onDrop, onDeleteGroup, onAddInsideCategory, onEditGroup, onTogglePin, isPinned, onCopy }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const total = group.habits.length;
   const completed = group.habits.filter(h => h.completed).length;
@@ -259,9 +259,22 @@ const CategoryCard = ({ group, habitStreaks, isPendingMode, isEditing, onToggle,
                <h3 className={`font-extrabold text-[15px] md:text-[16px] tracking-tight uppercase transition-colors duration-300 ${isAllDone && !isEditing ? 'text-[#34C759]' : 'text-gray-900'}`}>
                  {group.name}
                </h3>
-               <p className="text-[12px] font-medium text-gray-400 mt-0.5">
-                 {total > 0 ? `${completed} de ${total} completadas` : 'Categoría vacía'}
-               </p>
+               <div className="flex items-center gap-1.5 mt-0.5">
+                   <p className="text-[12px] font-medium text-gray-400">
+                     {total > 0 ? `${completed} de ${total} completadas` : 'Categoría vacía'}
+                   </p>
+                   {!isPendingMode && categoryStreak > 0 && (
+                     <>
+                        <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
+                        <div className="flex items-center gap-0.5">
+                            <Flame size={12} className="text-orange-500 flex-shrink-0" strokeWidth={2.5} />
+                            <span className="text-[11px] md:text-[12px] font-medium text-orange-600 truncate tracking-wide">
+                              {categoryStreak} {categoryStreak === 1 ? 'día' : 'días'} racha
+                            </span>
+                        </div>
+                     </>
+                   )}
+               </div>
             </div>
           </div>
           <div className="flex items-center gap-1.5">
@@ -288,6 +301,16 @@ const CategoryCard = ({ group, habitStreaks, isPendingMode, isEditing, onToggle,
                      title={isPinned ? "Desfijar" : "Fijar arriba"}
                   >
                      <Pin size={14} strokeWidth={2.5} fill={isPinned ? 'currentColor' : 'none'}/>
+                  </button>
+                  <button
+                     onClick={(e) => {
+                        e.stopPropagation();
+                        onCopy(group);
+                     }}
+                     className="w-7 h-7 flex items-center justify-center rounded-full bg-indigo-50 text-indigo-500 hover:bg-indigo-100 hover:scale-105 active:scale-95 transition-all"
+                     title="Copiar Categoría a otros días"
+                  >
+                     <Copy size={14} strokeWidth={2.5}/>
                   </button>
                   <button
                      onClick={(e) => {
@@ -335,6 +358,7 @@ const CategoryCard = ({ group, habitStreaks, isPendingMode, isEditing, onToggle,
                      habit={habit} computedStreak={habitStreaks[habit.id] || 0} isPendingMode={isPendingMode} isEditing={isEditing}
                      onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} onMoveToToday={onMoveToToday}
                      onMove={onMove} onDragStart={onDragStart} onDragEnd={onDragEnd} onDragOver={onDragOver} onDrop={onDrop}
+                     onCopy={onCopy}
                      hideIcon={true}
                    />
                 </div>
@@ -348,7 +372,7 @@ const CategoryCard = ({ group, habitStreaks, isPendingMode, isEditing, onToggle,
 
 // --- COMPONENTE TARJETA DE HÁBITO ---
 const HabitCard = ({
-  habit, computedStreak, isPendingMode, isEditing, onToggle, onDelete, onEdit, onMoveToToday, onMove, onDragStart, onDragEnd, onDragOver, onDrop, hideIcon = false
+  habit, computedStreak, isPendingMode, isEditing, onToggle, onDelete, onEdit, onMoveToToday, onMove, onDragStart, onDragEnd, onDragOver, onDrop, hideIcon = false, onCopy
 }) => {
   const IconComponent = ICON_MAP[habit.icon] || Target;
 
@@ -374,6 +398,9 @@ const HabitCard = ({
             <div className="flex items-center gap-1 flex-shrink-0 mr-1">
               <button onClick={(e) => { e.stopPropagation(); onDelete(habit.id); }} className="text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors p-1.5" title="Eliminar">
                 <MinusCircle size={20} className="fill-red-100" />
+              </button>
+              <button onClick={(e) => { e.stopPropagation(); onCopy(habit); }} className="text-indigo-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors p-1.5" title="Copiar">
+                <Copy size={18} className="fill-indigo-100" />
               </button>
               <button onClick={(e) => { e.stopPropagation(); onEdit(habit); }} className="text-[#007AFF] hover:text-[#006ae6] hover:bg-blue-50 rounded-full transition-colors p-1.5" title="Editar">
                 <Pencil size={18} className="fill-blue-100" />
@@ -478,6 +505,14 @@ const App = () => {
   const [isXpHistoryOpen, setIsXpHistoryOpen] = useState(false);
   const [isTrashOpen, setIsTrashOpen] = useState(false);
 
+  // Copy Modal State
+  const [isCopyModalOpen, setIsCopyModalOpen] = useState(false);
+  const [itemToCopy, setItemToCopy] = useState(null);
+  const [copyScheduleMode, setCopyScheduleMode] = useState('single');
+  const [copyTargetDateStr, setCopyTargetDateStr] = useState(todayStrLocal);
+  const [copyRangeEndDate, setCopyRangeEndDate] = useState(todayStrLocal);
+  const [copyRecurringDays, setCopyRecurringDays] = useState([1,2,3,4,5]);
+
   const [isEditing, setIsEditing] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [syncStatus, setSyncStatus] = useState('connecting');
@@ -543,7 +578,7 @@ const App = () => {
      return [...new Set([...derived, ...custom])];
   }, [habits, userProfile?.customCategories]);
 
-  // Cálculo Dinámico e Inteligente de Rachas por Meta
+  // Cálculo Dinámico e Inteligente de Rachas por Meta (Muestra pendientes también)
   const habitStreaks = useMemo(() => {
     const streaks = {};
     const habitsByName = {};
@@ -555,9 +590,22 @@ const App = () => {
 
     habits.forEach(h => {
         let currentStreak = 0;
+        let checkDate = new Date(h.date + 'T12:00:00');
+
         if (h.completed) {
             currentStreak = 1;
-            let checkDate = new Date(h.date + 'T12:00:00');
+            while (true) {
+                checkDate.setDate(checkDate.getDate() - 1);
+                const prevDateStr = getFormatDateStr(checkDate);
+                const prevHabit = habitsByName[h.name]?.[prevDateStr];
+                if (prevHabit && prevHabit.completed) {
+                    currentStreak++;
+                } else {
+                    break;
+                }
+            }
+        } else {
+            // Aunque no esté completada, verificamos si trae una racha desde los días anteriores
             while (true) {
                 checkDate.setDate(checkDate.getDate() - 1);
                 const prevDateStr = getFormatDateStr(checkDate);
@@ -574,6 +622,56 @@ const App = () => {
     return streaks;
   }, [habits]);
 
+  // Cálculo Dinámico e Inteligente de Rachas por Categoría Completa
+  const categoryStreaks = useMemo(() => {
+      const streaks = {};
+      const catDailyStatus = {};
+
+      habits.forEach(h => {
+          if (!h.category || h.isCategoryPlaceholder) return;
+          if (!catDailyStatus[h.category]) catDailyStatus[h.category] = {};
+          if (!catDailyStatus[h.category][h.date]) catDailyStatus[h.category][h.date] = { total: 0, completed: 0 };
+          catDailyStatus[h.category][h.date].total++;
+          if (h.completed) catDailyStatus[h.category][h.date].completed++;
+      });
+
+      Object.keys(catDailyStatus).forEach(cat => {
+          Object.keys(catDailyStatus[cat]).forEach(dateStr => {
+              let currentStreak = 0;
+              let checkDate = new Date(dateStr + 'T12:00:00');
+              const dayStatus = catDailyStatus[cat][dateStr];
+              
+              if (dayStatus && dayStatus.total > 0 && dayStatus.completed === dayStatus.total) {
+                  currentStreak = 1;
+                  while (true) {
+                      checkDate.setDate(checkDate.getDate() - 1);
+                      const prevDateStr = getFormatDateStr(checkDate);
+                      const prevStatus = catDailyStatus[cat][prevDateStr];
+                      if (prevStatus && prevStatus.total > 0 && prevStatus.completed === prevStatus.total) {
+                          currentStreak++;
+                      } else {
+                          break;
+                      }
+                  }
+              } else {
+                  // Racha pendiente
+                  while (true) {
+                      checkDate.setDate(checkDate.getDate() - 1);
+                      const prevDateStr = getFormatDateStr(checkDate);
+                      const prevStatus = catDailyStatus[cat][prevDateStr];
+                      if (prevStatus && prevStatus.total > 0 && prevStatus.completed === prevStatus.total) {
+                          currentStreak++;
+                      } else {
+                          break;
+                      }
+                  }
+              }
+              streaks[`${cat}_${dateStr}`] = currentStreak;
+          });
+      });
+      return streaks;
+  }, [habits]);
+
   useEffect(() => {
     completionSound.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2578/2578-preview.mp3');
     completionSound.current.volume = 0.4;
@@ -583,6 +681,18 @@ const App = () => {
   }, []);
 
   useEffect(() => {
+    const initAuth = async () => {
+      // Optional: Auto-login with injected custom token if present in environment
+      if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+        try {
+          await signInWithCustomToken(auth, __initial_auth_token);
+        } catch (e) {
+          console.error("Auto auth error", e);
+        }
+      }
+    };
+    initAuth();
+
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setIsLoadingAuth(false);
@@ -1299,6 +1409,108 @@ const App = () => {
     setIsCategoryModalOpen(true);
   };
 
+  const openCopyModal = (type, payload) => {
+    setItemToCopy({ type, payload });
+    setCopyScheduleMode('single');
+    setCopyTargetDateStr(selectedDateStr);
+    setCopyRangeEndDate(selectedDateStr);
+    setCopyRecurringDays([1,2,3,4,5]);
+    setIsCopyModalOpen(true);
+  };
+
+  const toggleCopyRecurringDay = (dayId) => {
+      if (copyRecurringDays.includes(dayId)) {
+          setCopyRecurringDays(copyRecurringDays.filter(d => d !== dayId));
+      } else {
+          setCopyRecurringDays([...copyRecurringDays, dayId]);
+      }
+  };
+
+  const executeCopy = (e) => {
+    e.preventDefault();
+    if (!itemToCopy) return;
+
+    let datesToCreate = [];
+    if (copyScheduleMode === 'single') {
+        datesToCreate = [copyTargetDateStr];
+    } else if (copyScheduleMode === 'range') {
+        datesToCreate = getDatesInRange(copyTargetDateStr, copyRangeEndDate);
+    } else if (copyScheduleMode === 'recurring') {
+        let curr = new Date(copyTargetDateStr + 'T12:00:00');
+        let limit = 56;
+        while(limit > 0) {
+            if (copyRecurringDays.includes(curr.getDay())) datesToCreate.push(getFormatDateStr(curr));
+            curr.setDate(curr.getDate() + 1);
+            limit--;
+        }
+    }
+
+    if (datesToCreate.length === 0) return;
+
+    const sharedGroupIdBase = Date.now().toString() + Math.random().toString(36).substring(2, 8);
+
+    withSync(async () => {
+        const batch = writeBatch(db);
+        let orderOffset = currentGoals.length; 
+        
+        datesToCreate.forEach(dateStr => {
+            if (itemToCopy.type === 'habit') {
+                const h = itemToCopy.payload;
+                // Desestructuramos para omitir campos como deletedAt o completedToday para no romper Firestore
+                const { id, completedToday, deletedAt, date, ...habitDataToCopy } = h;
+                
+                const newHabitRef = doc(collection(db, 'artifacts', appId, 'users', user.uid, 'habits'));
+                batch.set(newHabitRef, {
+                    ...habitDataToCopy,
+                    id: newHabitRef.id,
+                    groupId: sharedGroupIdBase,
+                    date: dateStr,
+                    completed: false,
+                    streak: 0,
+                    createdAt: Date.now()
+                });
+            } else if (itemToCopy.type === 'category') {
+                const group = itemToCopy.payload;
+                const existsPlaceholder = allRawHabits.some(h => h.category === group.name && h.date === dateStr && h.isCategoryPlaceholder);
+                if (!existsPlaceholder && group.placeholderId) {
+                    const placeholderRef = doc(collection(db, 'artifacts', appId, 'users', user.uid, 'habits'));
+                    batch.set(placeholderRef, {
+                        id: placeholderRef.id,
+                        isCategoryPlaceholder: true,
+                        category: group.name,
+                        name: `[Cat] ${group.name}`,
+                        date: dateStr,
+                        completed: false,
+                        order: orderOffset,
+                        color: group.color,
+                        icon: group.icon,
+                        createdAt: Date.now()
+                    });
+                }
+                
+                group.habits.forEach(h => {
+                    const { id, completedToday, deletedAt, date, ...habitDataToCopy } = h;
+                    const newHabitRef = doc(collection(db, 'artifacts', appId, 'users', user.uid, 'habits'));
+                    batch.set(newHabitRef, {
+                        ...habitDataToCopy,
+                        id: newHabitRef.id,
+                        groupId: sharedGroupIdBase + '_' + h.id,
+                        date: dateStr,
+                        completed: false,
+                        streak: 0,
+                        createdAt: Date.now()
+                    });
+                });
+            }
+        });
+
+        await batch.commit();
+    });
+
+    setIsCopyModalOpen(false);
+    showToast(`Copiado exitosamente a ${datesToCreate.length} día(s)`);
+  };
+
   const saveCategoryEdit = (e) => {
     e.preventDefault();
     if (!editCatName.trim()) return;
@@ -1551,8 +1763,24 @@ const App = () => {
 
   // Profile Analytics
   const totalCompletedGoals = habits.filter((h) => h.completed).length;
-  const bestStreakGlobal = Math.max(0, ...Object.values(habitStreaks), 0);
-  const activeStreakGlobal = Math.max(0, ...rawCurrentGoals.map(h => habitStreaks[h.id] || 0), 0);
+  
+  // Mejora: Calcula la mejor racha global buscando el valor más alto almacenado
+  const bestStreakGlobal = useMemo(() => Math.max(0, ...Object.values(habitStreaks), 0), [habitStreaks]);
+  
+  // Mejora: Racha activa global es la más alta en curso (calculada revisando los hábitos de hoy o ayer)
+  const activeStreakGlobal = useMemo(() => {
+      let maxStreak = 0;
+      const yesterday = new Date(todayStrLocal + 'T12:00:00');
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = getFormatDateStr(yesterday);
+
+      habits.forEach(h => {
+          if (h.date === todayStrLocal || h.date === yesterdayStr) {
+              maxStreak = Math.max(maxStreak, habitStreaks[h.id] || 0);
+          }
+      });
+      return maxStreak;
+  }, [habits, habitStreaks, todayStrLocal]);
 
   const completedCount = rawCurrentGoals.filter((h) => h.completed).length;
   const totalCount = rawCurrentGoals.filter(h => !h.isCategoryPlaceholder).length;
@@ -2115,9 +2343,9 @@ const App = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 lg:gap-5">
               {groupedPendingGoals.map((item) => {
                 if (item.isCategoryGroup) {
-                  return <CategoryCard key={item.id} group={item} habitStreaks={habitStreaks} isPendingMode={true} isEditing={isEditing} onToggle={toggleHabit} onDelete={deleteHabit} onEdit={openEditModal} onMoveToToday={moveToToday} onMove={moveHabit} onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDragOver={handleDragOver} onDrop={handleDrop} onDeleteGroup={handleDeleteCategory} onAddInsideCategory={openAddModalForCategory} onEditGroup={openEditCategoryModal} onTogglePin={toggleCategoryPin} isPinned={userProfile?.pinnedCategories?.includes(item.name)} />
+                  return <CategoryCard key={item.id} group={item} habitStreaks={habitStreaks} categoryStreak={0} isPendingMode={true} isEditing={isEditing} onToggle={toggleHabit} onDelete={deleteHabit} onEdit={openEditModal} onMoveToToday={moveToToday} onMove={moveHabit} onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDragOver={handleDragOver} onDrop={handleDrop} onDeleteGroup={handleDeleteCategory} onAddInsideCategory={openAddModalForCategory} onEditGroup={openEditCategoryModal} onTogglePin={toggleCategoryPin} isPinned={userProfile?.pinnedCategories?.includes(item.name)} onCopy={(group) => openCopyModal('category', group)} />
                 }
-                return <HabitCard key={item.id} habit={item} computedStreak={habitStreaks[item.id] || 0} isPendingMode={true} isEditing={isEditing} onToggle={toggleHabit} onDelete={deleteHabit} onEdit={openEditModal} onMoveToToday={moveToToday} onMove={moveHabit} onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDragOver={handleDragOver} onDrop={handleDrop} />
+                return <HabitCard key={item.id} habit={item} computedStreak={habitStreaks[item.id] || 0} isPendingMode={true} isEditing={isEditing} onToggle={toggleHabit} onDelete={deleteHabit} onEdit={openEditModal} onMoveToToday={moveToToday} onMove={moveHabit} onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDragOver={handleDragOver} onDrop={handleDrop} onCopy={(habit) => openCopyModal('habit', habit)} />
               })}
             </div>
           </section>
@@ -2132,9 +2360,9 @@ const App = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 lg:gap-5">
               {groupedCurrentGoals.map((item) => {
                 if (item.isCategoryGroup) {
-                   return <CategoryCard key={item.id} group={item} habitStreaks={habitStreaks} isPendingMode={false} isEditing={isEditing} onToggle={toggleHabit} onDelete={deleteHabit} onEdit={openEditModal} onMoveToToday={moveToToday} onMove={moveHabit} onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDragOver={handleDragOver} onDrop={handleDrop} onDeleteGroup={handleDeleteCategory} onAddInsideCategory={openAddModalForCategory} onEditGroup={openEditCategoryModal} onTogglePin={toggleCategoryPin} isPinned={userProfile?.pinnedCategories?.includes(item.name)} />
+                   return <CategoryCard key={item.id} group={item} habitStreaks={habitStreaks} categoryStreak={categoryStreaks[`${item.name}_${selectedDateStr}`] || 0} isPendingMode={false} isEditing={isEditing} onToggle={toggleHabit} onDelete={deleteHabit} onEdit={openEditModal} onMoveToToday={moveToToday} onMove={moveHabit} onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDragOver={handleDragOver} onDrop={handleDrop} onDeleteGroup={handleDeleteCategory} onAddInsideCategory={openAddModalForCategory} onEditGroup={openEditCategoryModal} onTogglePin={toggleCategoryPin} isPinned={userProfile?.pinnedCategories?.includes(item.name)} onCopy={(group) => openCopyModal('category', group)} />
                 }
-                return <HabitCard key={item.id} habit={item} computedStreak={habitStreaks[item.id] || 0} isPendingMode={false} isEditing={isEditing} onToggle={toggleHabit} onDelete={deleteHabit} onEdit={openEditModal} onMoveToToday={moveToToday} onMove={moveHabit} onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDragOver={handleDragOver} onDrop={handleDrop} />
+                return <HabitCard key={item.id} habit={item} computedStreak={habitStreaks[item.id] || 0} isPendingMode={false} isEditing={isEditing} onToggle={toggleHabit} onDelete={deleteHabit} onEdit={openEditModal} onMoveToToday={moveToToday} onMove={moveHabit} onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDragOver={handleDragOver} onDrop={handleDrop} onCopy={(habit) => openCopyModal('habit', habit)} />
               })}
 
             {currentGoals.length === 0 && (
@@ -2257,6 +2485,125 @@ const App = () => {
                 className="w-full bg-[#007AFF] text-white rounded-[16px] py-3 font-bold text-[14px] md:text-[15px] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 mt-1"
               >
                 Guardar y Actualizar Metas
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Copiar Meta / Categoría */}
+      {isCopyModalOpen && itemToCopy && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center md:items-center">
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-md transition-opacity duration-300" onClick={() => setIsCopyModalOpen(false)}></div>
+          <div className="bg-white w-full max-w-md md:max-w-xl lg:max-w-2xl rounded-t-[28px] md:rounded-[28px] p-5 md:p-6 pt-4 md:pt-5 z-10 animate-in slide-in-from-bottom-8 md:slide-in-from-bottom-0 md:zoom-in-95 shadow-xl flex flex-col max-h-[90vh]">
+            <div className="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-4 md:hidden flex-shrink-0"></div>
+            
+            <div className="flex justify-between items-center mb-4 flex-shrink-0">
+              <div>
+                <h2 className="text-[20px] md:text-[22px] font-extrabold tracking-tight text-gray-900">
+                  Duplicar {itemToCopy.type === 'category' ? 'Categoría' : 'Meta'}
+                </h2>
+                <p className="text-[13px] text-gray-500 font-medium mt-0.5 truncate max-w-[250px] md:max-w-sm">
+                  {itemToCopy.type === 'category' ? itemToCopy.payload.name : itemToCopy.payload.name}
+                </p>
+              </div>
+              <button onClick={() => setIsCopyModalOpen(false)} className="w-8 h-8 bg-[#F2F2F7] rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-200 hover:text-gray-800 transition-colors">
+                <X size={18} strokeWidth={2.5} />
+              </button>
+            </div>
+
+            <form onSubmit={executeCopy} className="overflow-y-auto pr-2 pb-2 space-y-4 md:space-y-5 category-scrollbar">
+                <div>
+                  <div className="flex justify-between items-center mb-2.5">
+                    <label className="text-[13px] font-bold text-gray-800">¿A qué días quieres copiar?</label>
+                    <div className="flex bg-[#F2F2F7] p-0.5 rounded-full">
+                      <button 
+                        type="button"
+                        onClick={() => setCopyScheduleMode('single')}
+                        className={`px-2.5 py-1 text-[11px] font-bold rounded-full transition-all duration-300 ${copyScheduleMode === 'single' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                      >
+                        Un Día
+                      </button>
+                      <button 
+                        type="button"
+                        onClick={() => setCopyScheduleMode('recurring')}
+                        className={`px-2.5 py-1 text-[11px] font-bold rounded-full transition-all duration-300 ${copyScheduleMode === 'recurring' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                      >
+                        Días
+                      </button>
+                      <button 
+                        type="button"
+                        onClick={() => setCopyScheduleMode('range')}
+                        className={`px-2.5 py-1 text-[11px] font-bold rounded-full transition-all duration-300 ${copyScheduleMode === 'range' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                      >
+                        Rango
+                      </button>
+                    </div>
+                  </div>
+
+                  {copyScheduleMode === 'recurring' && (
+                     <div className="bg-[#F2F2F7] p-3 md:p-4 rounded-[16px]">
+                        <p className="text-[11px] text-gray-500 font-medium mb-2.5">Selecciona los días para programar durante las próximas 8 semanas:</p>
+                        <div className="flex justify-between gap-1">
+                           {DAYS_OF_WEEK.map(day => (
+                               <button
+                                  key={day.id}
+                                  type="button"
+                                  onClick={() => toggleCopyRecurringDay(day.id)}
+                                  className={`w-8 h-8 md:w-9 md:h-9 rounded-full font-bold text-[12px] md:text-[13px] transition-all shadow-sm ${copyRecurringDays.includes(day.id) ? 'bg-[#007AFF] text-white scale-110' : 'bg-white text-gray-400 border border-gray-200'}`}
+                               >
+                                  {day.label}
+                               </button>
+                           ))}
+                        </div>
+                     </div>
+                  )}
+
+                  {copyScheduleMode !== 'recurring' && (
+                    <div className="flex gap-3 items-center bg-[#F2F2F7] p-2.5 rounded-[16px]">
+                      <div className="flex-1">
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1 mb-1">Inicio</p>
+                        <label className="relative block w-full bg-white rounded-[12px] border border-black/5 focus-within:border-[#007AFF] shadow-sm transition-colors cursor-pointer">
+                          <input 
+                            type="date" 
+                            value={copyTargetDateStr}
+                            onChange={(e) => {
+                              if (e.target.value) {
+                                setCopyTargetDateStr(e.target.value);
+                                if (e.target.value > copyRangeEndDate) setCopyRangeEndDate(e.target.value);
+                              }
+                            }}
+                            className="w-full h-full px-3 py-2 text-[13px] md:text-[14px] font-medium outline-none bg-transparent cursor-pointer"
+                          />
+                        </label>
+                      </div>
+                      {copyScheduleMode === 'range' && (
+                        <>
+                          <ArrowRight size={16} className="text-gray-400 flex-shrink-0 mt-4" />
+                          <div className="flex-1">
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1 mb-1">Fin</p>
+                            <label className="relative block w-full bg-white rounded-[12px] border border-black/5 focus-within:border-[#007AFF] shadow-sm transition-colors cursor-pointer">
+                              <input 
+                                type="date" 
+                                min={copyTargetDateStr}
+                                value={copyRangeEndDate}
+                                onChange={(e) => { if(e.target.value) setCopyRangeEndDate(e.target.value); }}
+                                className="w-full h-full px-3 py-2 text-[13px] md:text-[14px] font-medium outline-none bg-transparent cursor-pointer"
+                              />
+                            </label>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+              <button
+                type="submit"
+                disabled={(copyScheduleMode === 'range' && copyTargetDateStr > copyRangeEndDate) || (copyScheduleMode === 'recurring' && copyRecurringDays.length === 0)}
+                className="w-full bg-[#007AFF] text-white rounded-[16px] py-3 font-bold text-[14px] md:text-[15px] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 mt-1"
+              >
+                Duplicar a días seleccionados
               </button>
             </form>
           </div>
