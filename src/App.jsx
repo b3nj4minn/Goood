@@ -1281,7 +1281,9 @@ const App = () => {
 
   // Filtrado de metas en pantalla
   const rawCurrentGoals = useMemo(() => habits.filter((h) => h.date === selectedDateStr), [habits, selectedDateStr]);
-  const rawPendingGoals = useMemo(() => habits.filter((h) => h.date < todayStrLocal && !h.completed), [habits, todayStrLocal]);
+  
+  // SOLUCIÓN AL BUG: Se excluyen los placeholders (isCategoryPlaceholder) de las metas pendientes para que no aparezcan categorías vacías del pasado
+  const rawPendingGoals = useMemo(() => habits.filter((h) => h.date < todayStrLocal && !h.completed && !h.isCategoryPlaceholder), [habits, todayStrLocal]);
 
   const applyFilters = (list) => {
       let fList = list;
